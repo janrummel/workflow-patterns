@@ -752,24 +752,11 @@ def build_html(
                 </div>
             </div>
             <p class="uc-desc">{uc_meta['desc']}</p>
-            <div class="uc-detail">
-                <div class="uc-detail-label">Typical example</div>
-                <div class="uc-detail-value">{uc_meta['example']}</div>
-            </div>
-            <div class="uc-detail">
-                <div class="uc-detail-label">Most common pattern</div>
-                <div class="uc-detail-value"><code>{tp_sig}</code> ({tp_count}x)</div>
-            </div>
-            <div class="uc-detail">
-                <div class="uc-detail-label">Avg. complexity</div>
-                <div class="uc-detail-value">{data['avg_nodes']:.0f} nodes per workflow</div>
-            </div>
-            <div class="uc-detail">
-                <div class="uc-detail-label">Claude Code approach</div>
-                <div class="uc-detail-value claude-approach">{uc_meta['claude_code']}</div>
+            <div class="uc-detail-row">
+                <span class="uc-detail-chip">Pattern: <code>{tp_sig}</code> ({tp_count}x)</span>
+                <span class="uc-detail-chip">Avg: {data['avg_nodes']:.0f} nodes</span>
             </div>
             <div class="uc-examples-section">
-                <div class="uc-detail-label">Real workflow examples</div>
                 {examples_html}
             </div>
         </div>"""
@@ -867,6 +854,9 @@ def build_html(
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Workflow Patterns — {total_workflows:,} Automation Workflows Analyzed</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1/themes/prism-tomorrow.min.css">
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1/prism.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-python.min.js"></script>
 <style>
 :root {{
   --bg: #0d1117; --surface: #161b22; --surface2: #1c2129;
@@ -875,6 +865,7 @@ def build_html(
   --orange: #f78166; --cyan: #56d4dd; --yellow: #e3b341;
 }}
 * {{ margin:0; padding:0; box-sizing:border-box; }}
+html {{ scroll-behavior:smooth; }}
 body {{ font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif; background:var(--bg); color:var(--text); line-height:1.6; }}
 .container {{ max-width:1200px; margin:0 auto; padding:2rem; }}
 header {{ text-align:center; padding:3rem 0 1.5rem; border-bottom:1px solid var(--border); margin-bottom:2rem; }}
@@ -900,8 +891,10 @@ h2 {{ font-size:1.4rem; margin-bottom:0.3rem; padding-bottom:0.5rem; border-bott
 .uc-icon {{ font-size:1.8rem; }}
 .uc-header h3 {{ font-size:1.1rem; margin:0; }}
 .uc-count {{ color:var(--accent); font-size:0.85rem; font-weight:600; }}
-.uc-desc {{ color:var(--text-muted); margin-bottom:1rem; font-size:0.9rem; }}
-.uc-detail {{ margin:0.5rem 0; }}
+.uc-desc {{ color:var(--text-muted); margin-bottom:0.6rem; font-size:0.9rem; }}
+.uc-detail-row {{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:0.6rem; }}
+.uc-detail-chip {{ background:var(--surface2); padding:2px 10px; border-radius:10px; font-size:0.8rem; color:var(--text-muted); }}
+.uc-detail-chip code {{ font-size:0.75rem; }}
 .uc-detail-label {{ color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; font-weight:600; letter-spacing:0.5px; }}
 .uc-detail-value {{ font-size:0.9rem; }}
 .claude-approach {{ color:var(--purple); font-style:italic; }}
@@ -983,9 +976,15 @@ code {{ background:var(--surface2); padding:2px 6px; border-radius:4px; font-siz
 .wizard-back:hover {{ background:var(--accent); color:var(--bg); }}
 .wizard-result-header {{ display:flex; align-items:center; gap:0.8rem; margin-bottom:1rem; }}
 .wizard-result-header h3 {{ margin:0; font-size:1.3rem; }}
-.wizard-columns {{ display:grid; grid-template-columns:1fr 1fr; gap:2rem; margin-top:1rem; }}
-@media (max-width:900px) {{ .wizard-columns {{ grid-template-columns:1fr; }} }}
+.wiz-row {{ display:flex; gap:1.5rem; margin-top:0.5rem; flex-wrap:wrap; }}
+.wiz-col-third {{ flex:1; min-width:200px; }}
 .wizard-col {{ min-width:0; }}
+.copy-btn {{
+  background:var(--accent); color:var(--bg); border:none; border-radius:4px;
+  padding:2px 10px; font-size:0.7rem; font-weight:600; cursor:pointer;
+  margin-left:8px; vertical-align:middle;
+}}
+.copy-btn:hover {{ opacity:0.8; }}
 .wiz-label {{ color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; font-weight:600; letter-spacing:0.5px; margin:1rem 0 0.3rem; }}
 .wiz-label:first-child {{ margin-top:0; }}
 .wiz-pattern-display {{ font-size:1.1rem; padding:0.5rem 0; }}
@@ -1003,11 +1002,12 @@ code {{ background:var(--surface2); padding:2px 6px; border-radius:4px; font-siz
 }}
 .wiz-app-count {{ color:var(--text-muted); font-size:0.7rem; }}
 .wiz-code {{
-  background:var(--bg); border:1px solid var(--border); border-radius:6px;
+  background:#1e1e2e !important; border:1px solid var(--border); border-radius:6px;
   padding:1rem; font-size:0.8rem; line-height:1.5; overflow-x:auto;
   white-space:pre; font-family:'SF Mono',SFMono-Regular,Consolas,monospace;
-  max-height:500px; overflow-y:auto;
+  max-height:500px; overflow-y:auto; margin-top:4px;
 }}
+.wiz-code code {{ background:transparent !important; font-size:0.8rem; }}
 </style>
 </head>
 <body>
@@ -1053,29 +1053,34 @@ code {{ background:var(--surface2); padding:2px 6px; border-radius:4px; font-siz
       </div>
       <p id="wiz-desc" class="uc-desc"></p>
 
-      <div class="wizard-columns">
-        <div class="wizard-col">
+      <div class="wiz-row">
+        <div class="wiz-col-third">
           <div class="wiz-label">Pattern</div>
           <div id="wiz-pattern" class="wiz-pattern-display"></div>
-
-          <div class="wiz-label">Building blocks you need</div>
+        </div>
+        <div class="wiz-col-third">
+          <div class="wiz-label">Building blocks</div>
           <ul id="wiz-tools" class="wiz-tools-list"></ul>
-
-          <div class="wiz-label">Popular apps &amp; services used</div>
-          <div id="wiz-apps" class="wiz-apps"></div>
-
-          <div class="wiz-label">What you'll learn</div>
-          <ul id="wiz-learn" class="wiz-learn-list"></ul>
-
+        </div>
+        <div class="wiz-col-third">
           <div class="wiz-label">Claude Code approach</div>
           <p id="wiz-claude" class="claude-approach"></p>
-
-          <div class="wiz-label">How to run it</div>
+          <div class="wiz-label" style="margin-top:0.8rem;">How to run it</div>
           <code id="wiz-run" class="wiz-run"></code>
         </div>
-        <div class="wizard-col">
-          <div class="wiz-label">Starter code</div>
-          <pre id="wiz-code" class="wiz-code"></pre>
+      </div>
+
+      <div class="wiz-label">Popular apps &amp; services used in real workflows</div>
+      <div id="wiz-apps" class="wiz-apps"></div>
+
+      <div class="wiz-row" style="margin-top:1.2rem;">
+        <div class="wizard-col" style="flex:2;min-width:0;">
+          <div class="wiz-label">Starter code <button class="copy-btn" onclick="copyCode()">Copy</button></div>
+          <pre id="wiz-code" class="wiz-code"><code id="wiz-code-inner" class="language-python"></code></pre>
+        </div>
+        <div class="wizard-col" style="flex:1;min-width:200px;">
+          <div class="wiz-label">What you'll learn</div>
+          <ul id="wiz-learn" class="wiz-learn-list"></ul>
         </div>
       </div>
     </div>
@@ -1298,7 +1303,9 @@ function wizardSelect(index) {{
   document.getElementById('wiz-pattern').innerHTML = renderSteps(uc.pattern);
   document.getElementById('wiz-claude').textContent = uc.claude_code;
   document.getElementById('wiz-run').textContent = uc.run;
-  document.getElementById('wiz-code').textContent = uc.code;
+  const codeEl = document.getElementById('wiz-code-inner');
+  codeEl.textContent = uc.code;
+  if (window.Prism) Prism.highlightElement(codeEl);
 
   const toolsEl = document.getElementById('wiz-tools');
   toolsEl.innerHTML = uc.tools.map(t => `<li>${{t}}</li>`).join('');
@@ -1313,11 +1320,22 @@ function wizardSelect(index) {{
 
   document.getElementById('wizard-step1').style.display = 'none';
   document.getElementById('wizard-step2').style.display = 'block';
+  document.getElementById('wizard').scrollIntoView({{ behavior:'smooth' }});
 }}
 
 function wizardBack() {{
   document.getElementById('wizard-step1').style.display = 'block';
   document.getElementById('wizard-step2').style.display = 'none';
+  document.getElementById('wizard').scrollIntoView({{ behavior:'smooth' }});
+}}
+
+function copyCode() {{
+  const code = document.getElementById('wiz-code-inner').textContent;
+  navigator.clipboard.writeText(code).then(() => {{
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 1500);
+  }});
 }}
 </script>
 </body>
