@@ -27,8 +27,13 @@ mcp = FastMCP(
     instructions="Analyze automation workflow patterns and translate them to Claude Code architectures",
 )
 
-# Load workflows on startup
-DATA_DIR = Path(__file__).parent.parent.parent.parent / "data" / "sample_workflows"
+# Load workflows on startup — prefer full dataset, fall back to samples
+_BASE_DIR = Path(__file__).parent.parent.parent.parent / "data"
+DATA_DIR = (
+    _BASE_DIR / "all_workflows"
+    if (_BASE_DIR / "all_workflows").exists()
+    else _BASE_DIR / "sample_workflows"
+)
 _workflows: list[Workflow] = []
 
 
@@ -199,12 +204,15 @@ def show_all_patterns() -> str:
         "",
     ]
 
-    for p in patterns:
+    for p in patterns[:50]:
         lines.append(f"[{p.count}x] `{p.signature}`")
         for name in p.workflows[:3]:
             lines.append(f"     - {name}")
         if len(p.workflows) > 3:
             lines.append(f"     ... and {len(p.workflows) - 3} more")
         lines.append("")
+
+    if len(patterns) > 50:
+        lines.append(f"... and {len(patterns) - 50} more patterns (showing top 50)")
 
     return "\n".join(lines)

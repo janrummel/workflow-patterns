@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Workflow Patterns — 7,698 Automation Workflows Analyzed</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+:root {
+  --bg: #0d1117; --surface: #161b22; --surface2: #1c2129;
+  --border: #30363d; --text: #e6edf3; --text-muted: #8b949e;
+  --accent: #58a6ff; --green: #3fb950; --purple: #d2a8ff;
+  --orange: #f78166; --cyan: #56d4dd; --yellow: #e3b341;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif; background:var(--bg); color:var(--text); line-height:1.6; }
+.container { max-width:1200px; margin:0 auto; padding:2rem; }
+header { text-align:center; padding:3rem 0 1.5rem; border-bottom:1px solid var(--border); margin-bottom:2rem; }
+h1 { font-size:2.4rem; margin-bottom:0.3rem; } h1 span { color:var(--accent); }
+.subtitle { color:var(--text-muted); font-size:1.05rem; max-width:700px; margin:0 auto; }
+nav { display:flex; flex-wrap:wrap; gap:0.5rem; justify-content:center; margin:1.5rem 0; }
+nav a { color:var(--accent); text-decoration:none; padding:6px 14px; border:1px solid var(--border); border-radius:16px; font-size:0.85rem; transition:all 0.2s; }
+nav a:hover { background:var(--accent); color:var(--bg); }
+.stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1.2rem; margin:1.5rem 0 2.5rem; }
+.stat-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:1.2rem; text-align:center; }
+.stat-number { font-size:2.2rem; font-weight:700; color:var(--accent); }
+.stat-label { color:var(--text-muted); font-size:0.9rem; }
+section { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:2rem; margin:2rem 0; }
+h2 { font-size:1.4rem; margin-bottom:0.3rem; padding-bottom:0.5rem; border-bottom:1px solid var(--border); }
+.section-desc { color:var(--text-muted); margin-bottom:1.5rem; font-size:0.95rem; }
+.chart-container { position:relative; height:350px; width:100%; }
+.chart-container-tall { position:relative; height:550px; width:100%; }
+
+/* Use case cards */
+.uc-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(520px,1fr)); gap:1.5rem; }
+.uc-card { background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:1.5rem; }
+.uc-header { display:flex; align-items:center; gap:0.8rem; margin-bottom:0.8rem; }
+.uc-icon { font-size:1.8rem; }
+.uc-header h3 { font-size:1.1rem; margin:0; }
+.uc-count { color:var(--accent); font-size:0.85rem; font-weight:600; }
+.uc-desc { color:var(--text-muted); margin-bottom:1rem; font-size:0.9rem; }
+.uc-detail { margin:0.5rem 0; }
+.uc-detail-label { color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; font-weight:600; letter-spacing:0.5px; }
+.uc-detail-value { font-size:0.9rem; }
+.claude-approach { color:var(--purple); font-style:italic; }
+.uc-examples-section { margin-top:0.8rem; }
+.uc-example { background:var(--surface2); border-radius:4px; padding:0.5rem 0.8rem; margin:0.4rem 0; }
+.uc-example-name { font-size:0.8rem; color:var(--text-muted); margin-bottom:0.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.uc-example-steps { font-size:0.85rem; }
+
+/* Complexity tiers */
+.tier-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:1.2rem; }
+.tier-card { background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:1.2rem; text-align:center; }
+.tier-header h3 { font-size:1rem; margin:0; }
+.tier-range { color:var(--text-muted); font-size:0.8rem; }
+.tier-count-big { font-size:2rem; font-weight:700; color:var(--accent); margin:0.5rem 0; }
+.tier-desc { color:var(--text-muted); font-size:0.85rem; margin-bottom:0.8rem; }
+.tier-patterns-label { color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; font-weight:600; margin-bottom:0.4rem; }
+.tier-pattern { margin:0.4rem 0; font-size:0.8rem; }
+.tier-count { color:var(--text-muted); font-size:0.75rem; }
+
+/* Building blocks table */
+table { width:100%; border-collapse:collapse; }
+th,td { padding:0.5rem 0.8rem; text-align:left; border-bottom:1px solid var(--border); font-size:0.9rem; }
+th { color:var(--text-muted); font-weight:600; font-size:0.8rem; text-transform:uppercase; }
+.block-name { font-weight:600; }
+.block-desc { color:var(--text-muted); font-size:0.85rem; }
+
+/* Steps / badges */
+.step { display:inline-block; padding:1px 8px; border-radius:10px; font-size:0.8rem; font-weight:600; }
+.step-trigger { background:#1f3a1f; color:#3fb950; }
+.step-ai { background:#2d1f3a; color:#d2a8ff; }
+.step-transform { background:#1f2d3a; color:#58a6ff; }
+.step-deliver { background:#3a2a1f; color:#f78166; }
+.step-data { background:#1f3a3a; color:#56d4dd; }
+.step-api { background:#3a3a1f; color:#e3b341; }
+.step-logic { background:#2a2a2a; color:#8b949e; }
+.step-storage { background:#1f2a2a; color:#79c0ff; }
+.step-other { background:#2a2a2a; color:#6e7681; }
+
+.bar {
+  background:linear-gradient(90deg,var(--accent),var(--purple));
+  height:20px; border-radius:4px; color:white;
+  font-size:0.75rem; padding:0 8px; display:flex; align-items:center; min-width:40px;
+}
+
+/* Pattern cards */
+.pattern-card { background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:0.8rem 1rem; margin:0.6rem 0; }
+.pattern-sig { margin-bottom:0.4rem; }
+.pattern-meta { display:flex; gap:0.8rem; align-items:center; }
+.pattern-count { background:var(--accent); color:var(--bg); font-weight:700; padding:1px 8px; border-radius:8px; font-size:0.75rem; }
+.pattern-examples { color:var(--text-muted); font-size:0.8rem; }
+
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:2rem; }
+@media (max-width:900px) {
+  .two-col { grid-template-columns:1fr; }
+  .uc-grid { grid-template-columns:1fr; }
+  .tier-grid { grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); }
+}
+footer { text-align:center; color:var(--text-muted); padding:2rem 0; font-size:0.85rem; border-top:1px solid var(--border); margin-top:2rem; }
+footer a { color:var(--accent); text-decoration:none; }
+code { background:var(--surface2); padding:2px 6px; border-radius:4px; font-size:0.85rem; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>Workflow <span>Patterns</span></h1>
+  <p class="subtitle">
+    What do 7,698 real-world automation workflows have in common?
+    This analysis extracts the universal patterns behind them — the building blocks,
+    use cases, and architectures that power everyday automation.
+  </p>
+</header>
+
+<nav>
+  <a href="#use-cases">Use Cases</a>
+  <a href="#complexity">Complexity</a>
+  <a href="#building-blocks">Building Blocks</a>
+  <a href="#categories">Categories</a>
+  <a href="#patterns">Top Patterns</a>
+  <a href="#connections">Connections</a>
+</nav>
+
+<div class="stats-grid">
+  <div class="stat-card"><div class="stat-number">7,698</div><div class="stat-label">Workflows Analyzed</div></div>
+  <div class="stat-card"><div class="stat-number">115,186</div><div class="stat-label">Total Nodes</div></div>
+  <div class="stat-card"><div class="stat-number">2,592</div><div class="stat-label">Unique Patterns</div></div>
+  <div class="stat-card"><div class="stat-number">9</div><div class="stat-label">Categories</div></div>
+  <div class="stat-card"><div class="stat-number">12</div><div class="stat-label">Use Case Clusters</div></div>
+</div>
+
+<!-- USE CASES -->
+<section id="use-cases">
+  <h2>What People Automate</h2>
+  <p class="section-desc">
+    Every workflow solves a real problem. We clustered 7,698 workflows into 12 use case
+    families — from simple notification bots to complex AI pipelines.
+    Each card shows how often this pattern appears, what it looks like, and how
+    you could build it with Claude Code.
+  </p>
+  <div class="chart-container" style="margin-bottom:2rem;">
+    <canvas id="ucChart"></canvas>
+  </div>
+  <div class="uc-grid">
+    
+        <div class="uc-card">
+            <div class="uc-header">
+                <span class="uc-icon">🤖</span>
+                <div>
+                    <h3>AI Chatbot / Assistant</h3>
+                    <span class="uc-count">2,816 workflows (37%)</span>
+                </div>
+            </div>
+            <p class="uc-desc">Conversational AI agents with memory, tools, and context awareness.</p>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Typical example</div>
+                <div class="uc-detail-value">Customer support bot that answers questions using a knowledge base.</div>
+            </div>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Most common pattern</div>
+                <div class="uc-detail-value"><code>trigger -> ai</code> (58x)</div>
+            </div>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Avg. complexity</div>
+                <div class="uc-detail-value">19 nodes per workflow</div>
+            </div>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Claude Code approach</div>
+                <div class="uc-detail-value claude-approach">Claude agent + MCP servers for data access + CLAUDE.md for behavior</div>
+            </div>
+            <div class="uc-examples-section">
+                <div class="uc-detail-label">Real workflow examples</div>
+                <div class="uc-example"><div class="uc-example-name">-Powered_Knowledge_Base_with_Google_Docs_Discord_GPT-4o-mini...</div><div class="uc-example-steps"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-ai">ai</span> &rarr; <span class="step step-deliver">deliver</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-logic">logic</span> &rarr; <span class="step step-storage">storage</span></div></div><div class="uc-example"><div class="uc-example-name">10X_E-commerce_Sales_AI_Product_Photography_That_Makes_your_...</div><div class="uc-example-steps"><span class="step step-storage">storage</span> &rarr; <span class="step step-ai">ai</span> &rarr; <span class="step step-api">api</span></div></div><div class="uc-example"><div class="uc-example-name">5_Ways_to_Process_Images_PDFs_with_Gemini_AI_in_n8n-3078</div><div class="uc-example-steps"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-ai">ai</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-api">api</span> &rarr; <span class="step step-logic">logic</span></div></div>
+            </div>
+        </div>
+        <div class="uc-card">
+            <div class="uc-header">
+                <span class="uc-icon">✍️</span>
+                <div>
+                    <h3>AI Content Creation</h3>
+                    <span class="uc-count">2,150 workflows (28%)</span>
+                </div>
+            </div>
+            <p class="uc-desc">Generate text, images, or media with AI and deliver via email, Slack, or CMS.</p>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Typical example</div>
+                <div class="uc-detail-value">Weekly newsletter: fetch articles, summarize with AI, send by email.</div>
+            </div>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Most common pattern</div>
+                <div class="uc-detail-value"><code>trigger -> ai -> transform -> deliver</code> (35x)</div>
+            </div>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Avg. complexity</div>
+                <div class="uc-detail-value">19 nodes per workflow</div>
+            </div>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Claude Code approach</div>
+                <div class="uc-detail-value claude-approach">Cron trigger + Claude agent for content + MCP server for delivery</div>
+            </div>
+            <div class="uc-examples-section">
+                <div class="uc-detail-label">Real workflow examples</div>
+                <div class="uc-example"><div class="uc-example-name">AAVE Portfolio Professional AI Agent</div><div class="uc-example-steps"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-ai">ai</span> &rarr; <span class="step step-api">api</span> &rarr; <span class="step step-data">data</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-deliver">deliver</span></div></div><div class="uc-example"><div class="uc-example-name">My workflow 13</div><div class="uc-example-steps"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-ai">ai</span> &rarr; <span class="step step-logic">logic</span> &rarr; <span class="step step-data">data</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-deliver">deliver</span></div></div><div class="uc-example"><div class="uc-example-name">AI-Driven Competitor & Market Intelligence with GPT 4 & Apif...</div><div class="uc-example-steps"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-api">api</span> &rarr; <span class="step step-logic">logic</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-ai">ai</span> &rarr; <span class="step step-storage">storage</span> &rarr; <span class="step step-deliver">deliver</span> &rarr; <span class="step step-data">data</span></div></div>
+            </div>
+        </div>
+        <div class="uc-card">
+            <div class="uc-header">
+                <span class="uc-icon">🔄</span>
+                <div>
+                    <h3>Data Pipeline / ETL</h3>
+                    <span class="uc-count">1,127 workflows (15%)</span>
+                </div>
+            </div>
+            <p class="uc-desc">Move, transform, and sync data between databases, sheets, and APIs.</p>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Typical example</div>
+                <div class="uc-detail-value">Sync new CRM contacts to Google Sheets every hour.</div>
+            </div>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Most common pattern</div>
+                <div class="uc-detail-value"><code>trigger -> api -> transform -> data</code> (44x)</div>
+            </div>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Avg. complexity</div>
+                <div class="uc-detail-value">13 nodes per workflow</div>
+            </div>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Claude Code approach</div>
+                <div class="uc-detail-value claude-approach">Python script + MCP server for data sources + cron scheduler</div>
+            </div>
+            <div class="uc-examples-section">
+                <div class="uc-detail-label">Real workflow examples</div>
+                <div class="uc-example"><div class="uc-example-name">2-way_Sync_Google_Contacts_and_Notion-2814</div><div class="uc-example-steps"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-api">api</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-logic">logic</span> &rarr; <span class="step step-other">other</span> &rarr; <span class="step step-data">data</span></div></div><div class="uc-example"><div class="uc-example-name">3D Product Video</div><div class="uc-example-steps"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-storage">storage</span> &rarr; <span class="step step-api">api</span> &rarr; <span class="step step-data">data</span> &rarr; <span class="step step-logic">logic</span> &rarr; <span class="step step-deliver">deliver</span></div></div><div class="uc-example"><div class="uc-example-name">Blush Pin Week — 7-Day Pinterest Planner (n8n + Notion)</div><div class="uc-example-steps"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-deliver">deliver</span> &rarr; <span class="step step-logic">logic</span> &rarr; <span class="step step-data">data</span></div></div>
+            </div>
+        </div>
+        <div class="uc-card">
+            <div class="uc-header">
+                <span class="uc-icon">📱</span>
+                <div>
+                    <h3>Social Media Automation</h3>
+                    <span class="uc-count">1,300 workflows (17%)</span>
+                </div>
+            </div>
+            <p class="uc-desc">Auto-post, monitor, or engage on social platforms with or without AI.</p>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Typical example</div>
+                <div class="uc-detail-value">Generate LinkedIn posts from blog articles and schedule publishing.</div>
+            </div>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Most common pattern</div>
+                <div class="uc-detail-value"><code>trigger -> api -> transform -> deliver</code> (15x)</div>
+            </div>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Avg. complexity</div>
+                <div class="uc-detail-value">20 nodes per workflow</div>
+            </div>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Claude Code approach</div>
+                <div class="uc-detail-value claude-approach">Claude agent for content + MCP servers for each platform</div>
+            </div>
+            <div class="uc-examples-section">
+                <div class="uc-detail-label">Real workflow examples</div>
+                <div class="uc-example"><div class="uc-example-name">AAVE Portfolio Professional AI Agent</div><div class="uc-example-steps"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-ai">ai</span> &rarr; <span class="step step-api">api</span> &rarr; <span class="step step-data">data</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-deliver">deliver</span></div></div><div class="uc-example"><div class="uc-example-name">Automated Instagram Reels Generator (Creatomate)</div><div class="uc-example-steps"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-ai">ai</span> &rarr; <span class="step step-data">data</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-deliver">deliver</span> &rarr; <span class="step step-logic">logic</span> &rarr; <span class="step step-api">api</span></div></div><div class="uc-example"><div class="uc-example-name">AI-Driven_Video_Creation_Upload_to_Instagram_TikTok_YouTube_...</div><div class="uc-example-steps"><span class="step step-data">data</span> &rarr; <span class="step step-trigger">trigger</span> &rarr; <span class="step step-ai">ai</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-other">other</span> &rarr; <span class="step step-api">api</span> &rarr; <span class="step step-logic">logic</span> &rarr; <span class="step step-storage">storage</span> &rarr; <span class="step step-deliver">deliver</span></div></div>
+            </div>
+        </div>
+        <div class="uc-card">
+            <div class="uc-header">
+                <span class="uc-icon">📧</span>
+                <div>
+                    <h3>Email Automation</h3>
+                    <span class="uc-count">1,329 workflows (17%)</span>
+                </div>
+            </div>
+            <p class="uc-desc">Send, process, or route emails based on triggers and conditions.</p>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Typical example</div>
+                <div class="uc-detail-value">When a form is submitted, send a confirmation email and notify the team.</div>
+            </div>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Most common pattern</div>
+                <div class="uc-detail-value"><code>trigger -> transform -> api -> logic -> deliver</code> (26x)</div>
+            </div>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Avg. complexity</div>
+                <div class="uc-detail-value">16 nodes per workflow</div>
+            </div>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Claude Code approach</div>
+                <div class="uc-detail-value claude-approach">MCP server for email + trigger script + optional Claude for personalization</div>
+            </div>
+            <div class="uc-examples-section">
+                <div class="uc-detail-label">Real workflow examples</div>
+                <div class="uc-example"><div class="uc-example-name">3D Product Video</div><div class="uc-example-steps"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-storage">storage</span> &rarr; <span class="step step-api">api</span> &rarr; <span class="step step-data">data</span> &rarr; <span class="step step-logic">logic</span> &rarr; <span class="step step-deliver">deliver</span></div></div><div class="uc-example"><div class="uc-example-name">Blush Pin Week — 7-Day Pinterest Planner (n8n + Notion)</div><div class="uc-example-steps"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-deliver">deliver</span> &rarr; <span class="step step-logic">logic</span> &rarr; <span class="step step-data">data</span></div></div><div class="uc-example"><div class="uc-example-name">AAVE Portfolio Professional AI Agent</div><div class="uc-example-steps"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-ai">ai</span> &rarr; <span class="step step-api">api</span> &rarr; <span class="step step-data">data</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-deliver">deliver</span></div></div>
+            </div>
+        </div>
+        <div class="uc-card">
+            <div class="uc-header">
+                <span class="uc-icon">📄</span>
+                <div>
+                    <h3>Document Processing</h3>
+                    <span class="uc-count">1,096 workflows (14%)</span>
+                </div>
+            </div>
+            <p class="uc-desc">Extract, transform, or analyze documents (PDF, images, files) with AI.</p>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Typical example</div>
+                <div class="uc-detail-value">Extract invoice data from PDFs and write to a spreadsheet.</div>
+            </div>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Most common pattern</div>
+                <div class="uc-detail-value"><code>trigger -> ai -> storage</code> (13x)</div>
+            </div>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Avg. complexity</div>
+                <div class="uc-detail-value">24 nodes per workflow</div>
+            </div>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Claude Code approach</div>
+                <div class="uc-detail-value claude-approach">Claude agent with file tools + MCP server for storage</div>
+            </div>
+            <div class="uc-examples-section">
+                <div class="uc-detail-label">Real workflow examples</div>
+                <div class="uc-example"><div class="uc-example-name">-Powered_Knowledge_Base_with_Google_Docs_Discord_GPT-4o-mini...</div><div class="uc-example-steps"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-ai">ai</span> &rarr; <span class="step step-deliver">deliver</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-logic">logic</span> &rarr; <span class="step step-storage">storage</span></div></div><div class="uc-example"><div class="uc-example-name">10X_E-commerce_Sales_AI_Product_Photography_That_Makes_your_...</div><div class="uc-example-steps"><span class="step step-storage">storage</span> &rarr; <span class="step step-ai">ai</span> &rarr; <span class="step step-api">api</span></div></div><div class="uc-example"><div class="uc-example-name">5_Ways_to_Process_Images_PDFs_with_Gemini_AI_in_n8n-3078</div><div class="uc-example-steps"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-ai">ai</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-api">api</span> &rarr; <span class="step step-logic">logic</span></div></div>
+            </div>
+        </div>
+        <div class="uc-card">
+            <div class="uc-header">
+                <span class="uc-icon">🔗</span>
+                <div>
+                    <h3>API Integration / Sync</h3>
+                    <span class="uc-count">738 workflows (10%)</span>
+                </div>
+            </div>
+            <p class="uc-desc">Connect external APIs, fetch data, and sync between services.</p>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Typical example</div>
+                <div class="uc-detail-value">Pull data from a REST API, transform it, and store in a database.</div>
+            </div>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Most common pattern</div>
+                <div class="uc-detail-value"><code>trigger -> api -> transform -> data</code> (42x)</div>
+            </div>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Avg. complexity</div>
+                <div class="uc-detail-value">13 nodes per workflow</div>
+            </div>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Claude Code approach</div>
+                <div class="uc-detail-value claude-approach">MCP server wrapping the API + Python transform script + data MCP server</div>
+            </div>
+            <div class="uc-examples-section">
+                <div class="uc-detail-label">Real workflow examples</div>
+                <div class="uc-example"><div class="uc-example-name">2-way_Sync_Google_Contacts_and_Notion-2814</div><div class="uc-example-steps"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-api">api</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-logic">logic</span> &rarr; <span class="step step-other">other</span> &rarr; <span class="step step-data">data</span></div></div><div class="uc-example"><div class="uc-example-name">3D Product Video</div><div class="uc-example-steps"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-storage">storage</span> &rarr; <span class="step step-api">api</span> &rarr; <span class="step step-data">data</span> &rarr; <span class="step step-logic">logic</span> &rarr; <span class="step step-deliver">deliver</span></div></div><div class="uc-example"><div class="uc-example-name">Cold calling loop</div><div class="uc-example-steps"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-data">data</span> &rarr; <span class="step step-logic">logic</span> &rarr; <span class="step step-deliver">deliver</span> &rarr; <span class="step step-api">api</span> &rarr; <span class="step step-transform">transform</span></div></div>
+            </div>
+        </div>
+        <div class="uc-card">
+            <div class="uc-header">
+                <span class="uc-icon">📊</span>
+                <div>
+                    <h3>AI Data Analysis</h3>
+                    <span class="uc-count">734 workflows (10%)</span>
+                </div>
+            </div>
+            <p class="uc-desc">Analyze data from databases or spreadsheets using AI for insights.</p>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Typical example</div>
+                <div class="uc-detail-value">Analyze sales data weekly and generate a trend report.</div>
+            </div>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Most common pattern</div>
+                <div class="uc-detail-value"><code>trigger -> ai -> transform -> data</code> (26x)</div>
+            </div>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Avg. complexity</div>
+                <div class="uc-detail-value">19 nodes per workflow</div>
+            </div>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Claude Code approach</div>
+                <div class="uc-detail-value claude-approach">Claude agent + MCP server for data access + analysis skill</div>
+            </div>
+            <div class="uc-examples-section">
+                <div class="uc-detail-label">Real workflow examples</div>
+                <div class="uc-example"><div class="uc-example-name">A/B Split Testing</div><div class="uc-example-steps"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-ai">ai</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-data">data</span> &rarr; <span class="step step-logic">logic</span></div></div><div class="uc-example"><div class="uc-example-name">AI-Generated_LinkedIn_Posts_with_Human_Approval_using_GPT-4_...</div><div class="uc-example-steps"><span class="step step-ai">ai</span> &rarr; <span class="step step-trigger">trigger</span> &rarr; <span class="step step-data">data</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-logic">logic</span> &rarr; <span class="step step-other">other</span> &rarr; <span class="step step-api">api</span></div></div><div class="uc-example"><div class="uc-example-name">COO Task Prioritization</div><div class="uc-example-steps"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-ai">ai</span> &rarr; <span class="step step-other">other</span> &rarr; <span class="step step-data">data</span></div></div>
+            </div>
+        </div>
+        <div class="uc-card">
+            <div class="uc-header">
+                <span class="uc-icon">🎯</span>
+                <div>
+                    <h3>Lead Gen / CRM</h3>
+                    <span class="uc-count">536 workflows (7%)</span>
+                </div>
+            </div>
+            <p class="uc-desc">Capture, enrich, score, and route leads through a sales pipeline.</p>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Typical example</div>
+                <div class="uc-detail-value">Enrich new leads with company data and assign to sales reps.</div>
+            </div>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Most common pattern</div>
+                <div class="uc-detail-value"><code>trigger -> transform -> data</code> (6x)</div>
+            </div>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Avg. complexity</div>
+                <div class="uc-detail-value">16 nodes per workflow</div>
+            </div>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Claude Code approach</div>
+                <div class="uc-detail-value claude-approach">MCP server for CRM + Claude agent for scoring + webhook trigger</div>
+            </div>
+            <div class="uc-examples-section">
+                <div class="uc-detail-label">Real workflow examples</div>
+                <div class="uc-example"><div class="uc-example-name">Smart Lead Tagging & Routing</div><div class="uc-example-steps"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-ai">ai</span> &rarr; <span class="step step-other">other</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-logic">logic</span> &rarr; <span class="step step-deliver">deliver</span></div></div><div class="uc-example"><div class="uc-example-name">AI-Driven_Lead_Management_and_Inquiry_Automation_with_ERPNex...</div><div class="uc-example-steps"><span class="step step-ai">ai</span> &rarr; <span class="step step-data">data</span> &rarr; <span class="step step-storage">storage</span> &rarr; <span class="step step-trigger">trigger</span> &rarr; <span class="step step-logic">logic</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-api">api</span> &rarr; <span class="step step-deliver">deliver</span></div></div><div class="uc-example"><div class="uc-example-name">Generate and send MadKudu Account Brief into Outreach</div><div class="uc-example-steps"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-ai">ai</span> &rarr; <span class="step step-other">other</span> &rarr; <span class="step step-api">api</span></div></div>
+            </div>
+        </div>
+        <div class="uc-card">
+            <div class="uc-header">
+                <span class="uc-icon">🔔</span>
+                <div>
+                    <h3>Scheduled Notifications</h3>
+                    <span class="uc-count">591 workflows (8%)</span>
+                </div>
+            </div>
+            <p class="uc-desc">Send alerts, reminders, or digests on a schedule — no AI needed.</p>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Typical example</div>
+                <div class="uc-detail-value">Every morning, check for overdue tasks and send a Slack reminder.</div>
+            </div>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Most common pattern</div>
+                <div class="uc-detail-value"><code>trigger -> transform -> api -> logic -> deliver</code> (31x)</div>
+            </div>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Avg. complexity</div>
+                <div class="uc-detail-value">13 nodes per workflow</div>
+            </div>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Claude Code approach</div>
+                <div class="uc-detail-value claude-approach">Cron job + Python script + MCP server for notifications</div>
+            </div>
+            <div class="uc-examples-section">
+                <div class="uc-detail-label">Real workflow examples</div>
+                <div class="uc-example"><div class="uc-example-name">Blush Pin Week — 7-Day Pinterest Planner (n8n + Notion)</div><div class="uc-example-steps"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-deliver">deliver</span> &rarr; <span class="step step-logic">logic</span> &rarr; <span class="step step-data">data</span></div></div><div class="uc-example"><div class="uc-example-name">Cold calling loop</div><div class="uc-example-steps"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-data">data</span> &rarr; <span class="step step-logic">logic</span> &rarr; <span class="step step-deliver">deliver</span> &rarr; <span class="step step-api">api</span> &rarr; <span class="step step-transform">transform</span></div></div><div class="uc-example"><div class="uc-example-name">Enterprise Reddit Intelligence & Engagement Platform</div><div class="uc-example-steps"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-logic">logic</span> &rarr; <span class="step step-api">api</span> &rarr; <span class="step step-deliver">deliver</span> &rarr; <span class="step step-transform">transform</span></div></div>
+            </div>
+        </div>
+        <div class="uc-card">
+            <div class="uc-header">
+                <span class="uc-icon">🧠</span>
+                <div>
+                    <h3>RAG / Knowledge Base</h3>
+                    <span class="uc-count">333 workflows (4%)</span>
+                </div>
+            </div>
+            <p class="uc-desc">Build AI systems that retrieve and reason over your own documents.</p>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Typical example</div>
+                <div class="uc-detail-value">Upload docs to a vector store, then query with natural language.</div>
+            </div>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Most common pattern</div>
+                <div class="uc-detail-value"><code>ai -> trigger -> storage</code> (7x)</div>
+            </div>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Avg. complexity</div>
+                <div class="uc-detail-value">26 nodes per workflow</div>
+            </div>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Claude Code approach</div>
+                <div class="uc-detail-value claude-approach">Claude agent + vector store MCP server + document ingestion script</div>
+            </div>
+            <div class="uc-examples-section">
+                <div class="uc-detail-label">Real workflow examples</div>
+                <div class="uc-example"><div class="uc-example-name">05 EDI File Processing - Completed</div><div class="uc-example-steps"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-ai">ai</span> &rarr; <span class="step step-storage">storage</span> &rarr; <span class="step step-transform">transform</span></div></div><div class="uc-example"><div class="uc-example-name">COO Task Prioritization</div><div class="uc-example-steps"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-ai">ai</span> &rarr; <span class="step step-other">other</span> &rarr; <span class="step step-data">data</span></div></div><div class="uc-example"><div class="uc-example-name">Generate Exam Questions</div><div class="uc-example-steps"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-ai">ai</span> &rarr; <span class="step step-api">api</span> &rarr; <span class="step step-storage">storage</span> &rarr; <span class="step step-logic">logic</span> &rarr; <span class="step step-data">data</span> &rarr; <span class="step step-transform">transform</span></div></div>
+            </div>
+        </div>
+        <div class="uc-card">
+            <div class="uc-header">
+                <span class="uc-icon">📥</span>
+                <div>
+                    <h3>Form / Webhook Handler</h3>
+                    <span class="uc-count">891 workflows (12%)</span>
+                </div>
+            </div>
+            <p class="uc-desc">React to incoming HTTP requests or form submissions with processing logic.</p>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Typical example</div>
+                <div class="uc-detail-value">Receive a webhook, validate the data, and update a database.</div>
+            </div>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Most common pattern</div>
+                <div class="uc-detail-value"><code>trigger -> transform -> api</code> (41x)</div>
+            </div>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Avg. complexity</div>
+                <div class="uc-detail-value">13 nodes per workflow</div>
+            </div>
+            <div class="uc-detail">
+                <div class="uc-detail-label">Claude Code approach</div>
+                <div class="uc-detail-value claude-approach">Python webhook server + data validation script + MCP server for storage</div>
+            </div>
+            <div class="uc-examples-section">
+                <div class="uc-detail-label">Real workflow examples</div>
+                <div class="uc-example"><div class="uc-example-name">3D Product Video</div><div class="uc-example-steps"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-storage">storage</span> &rarr; <span class="step step-api">api</span> &rarr; <span class="step step-data">data</span> &rarr; <span class="step step-logic">logic</span> &rarr; <span class="step step-deliver">deliver</span></div></div><div class="uc-example"><div class="uc-example-name">AI Contact Enrichment</div><div class="uc-example-steps"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-api">api</span> &rarr; <span class="step step-data">data</span></div></div><div class="uc-example"><div class="uc-example-name">AI-Powered_Loom_Video_QA_with_Gemini-25_and_Slack_Notificati...</div><div class="uc-example-steps"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-logic">logic</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-api">api</span> &rarr; <span class="step step-deliver">deliver</span></div></div>
+            </div>
+        </div>
+  </div>
+</section>
+
+<!-- COMPLEXITY -->
+<section id="complexity">
+  <h2>How Complex Are Real Workflows?</h2>
+  <p class="section-desc">
+    Not every automation needs 20 steps. Most real-world workflows range from
+    4 to 20 nodes. Here's how they distribute — and the top patterns at each tier.
+  </p>
+  <div class="chart-container" style="margin-bottom:2rem;">
+    <canvas id="tierChart"></canvas>
+  </div>
+  <div class="tier-grid">
+    
+        <div class="tier-card">
+            <div class="tier-header">
+                <h3>Quick Automation</h3>
+                <span class="tier-range">2-3 nodes</span>
+            </div>
+            <div class="tier-count-big">292</div>
+            <p class="tier-desc">Simple one-step automations. Trigger something, do one action.</p>
+            <div class="tier-patterns-label">Top patterns:</div>
+            <div class="tier-pattern"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-other">other</span> <span class="tier-count">40x</span></div><div class="tier-pattern"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-api">api</span> <span class="tier-count">26x</span></div><div class="tier-pattern"><span class="step step-api">api</span> &rarr; <span class="step step-trigger">trigger</span> <span class="tier-count">22x</span></div>
+        </div>
+        <div class="tier-card">
+            <div class="tier-header">
+                <h3>Standard Workflow</h3>
+                <span class="tier-range">4-6 nodes</span>
+            </div>
+            <div class="tier-count-big">1,080</div>
+            <p class="tier-desc">Common business processes with a few steps and some logic.</p>
+            <div class="tier-patterns-label">Top patterns:</div>
+            <div class="tier-pattern"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-api">api</span> <span class="tier-count">40x</span></div><div class="tier-pattern"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-api">api</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-data">data</span> <span class="tier-count">39x</span></div><div class="tier-pattern"><span class="step step-other">other</span> &rarr; <span class="step step-trigger">trigger</span> <span class="tier-count">35x</span></div>
+        </div>
+        <div class="tier-card">
+            <div class="tier-header">
+                <h3>Medium Pipeline</h3>
+                <span class="tier-range">7-10 nodes</span>
+            </div>
+            <div class="tier-count-big">1,960</div>
+            <p class="tier-desc">Multi-step workflows with transforms, conditions, and integrations.</p>
+            <div class="tier-patterns-label">Top patterns:</div>
+            <div class="tier-pattern"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-api">api</span> &rarr; <span class="step step-logic">logic</span> <span class="tier-count">82x</span></div><div class="tier-pattern"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-api">api</span> <span class="tier-count">30x</span></div><div class="tier-pattern"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-ai">ai</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-deliver">deliver</span> <span class="tier-count">24x</span></div>
+        </div>
+        <div class="tier-card">
+            <div class="tier-header">
+                <h3>Complex System</h3>
+                <span class="tier-range">11-20 nodes</span>
+            </div>
+            <div class="tier-count-big">2,929</div>
+            <p class="tier-desc">Sophisticated automations combining AI, multiple data sources, and branching logic.</p>
+            <div class="tier-patterns-label">Top patterns:</div>
+            <div class="tier-pattern"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-api">api</span> &rarr; <span class="step step-logic">logic</span> <span class="tier-count">83x</span></div><div class="tier-pattern"><span class="step step-other">other</span> &rarr; <span class="step step-trigger">trigger</span> <span class="tier-count">31x</span></div><div class="tier-pattern"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-ai">ai</span> <span class="tier-count">24x</span></div>
+        </div>
+        <div class="tier-card">
+            <div class="tier-header">
+                <h3>Enterprise Pipeline</h3>
+                <span class="tier-range">21+ nodes</span>
+            </div>
+            <div class="tier-count-big">1,437</div>
+            <p class="tier-desc">Large-scale workflows with many integrations, error handling, and parallel processing.</p>
+            <div class="tier-patterns-label">Top patterns:</div>
+            <div class="tier-pattern"><span class="step step-api">api</span> &rarr; <span class="step step-trigger">trigger</span> <span class="tier-count">19x</span></div><div class="tier-pattern"><span class="step step-other">other</span> &rarr; <span class="step step-trigger">trigger</span> <span class="tier-count">19x</span></div><div class="tier-pattern"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-logic">logic</span> &rarr; <span class="step step-api">api</span> <span class="tier-count">16x</span></div>
+        </div>
+  </div>
+</section>
+
+<!-- BUILDING BLOCKS -->
+<section id="building-blocks">
+  <h2>The 30 Most-Used Building Blocks</h2>
+  <p class="section-desc">
+    These are the concrete tools that appear most often across all workflows.
+    Each one maps to an abstract category (trigger, ai, transform, etc.).
+  </p>
+  <table>
+    <thead><tr><th>Tool</th><th>Category</th><th>What it does</th><th>Usage</th></tr></thead>
+    <tbody>
+        <tr>
+            <td><span class="block-name">HTTP Request</span></td>
+            <td><span class="step step-api">api</span></td>
+            <td class="block-desc">Call any REST API endpoint</td>
+            <td><div class="bar" style="width:280px">11,055</div></td>
+        </tr>
+        <tr>
+            <td><span class="block-name">Code (JavaScript/Python)</span></td>
+            <td><span class="step step-transform">transform</span></td>
+            <td class="block-desc">Custom code for any transformation</td>
+            <td><div class="bar" style="width:280px">10,428</div></td>
+        </tr>
+        <tr>
+            <td><span class="block-name">Set Fields</span></td>
+            <td><span class="step step-transform">transform</span></td>
+            <td class="block-desc">Assign or rename data fields</td>
+            <td><div class="bar" style="width:280px">9,546</div></td>
+        </tr>
+        <tr>
+            <td><span class="block-name">If Condition</span></td>
+            <td><span class="step step-logic">logic</span></td>
+            <td class="block-desc">Branch workflow based on conditions</td>
+            <td><div class="bar" style="width:280px">6,160</div></td>
+        </tr>
+        <tr>
+            <td><span class="block-name">Google Sheets</span></td>
+            <td><span class="step step-data">data</span></td>
+            <td class="block-desc">Read/write spreadsheet data</td>
+            <td><div class="bar" style="width:280px">5,604</div></td>
+        </tr>
+        <tr>
+            <td><span class="block-name">AI Agent</span></td>
+            <td><span class="step step-ai">ai</span></td>
+            <td class="block-desc">Autonomous AI agent with tool access</td>
+            <td><div class="bar" style="width:280px">4,310</div></td>
+        </tr>
+        <tr>
+            <td><span class="block-name">OpenAI Chat</span></td>
+            <td><span class="step step-ai">ai</span></td>
+            <td class="block-desc">GPT-4o / GPT-4 language model</td>
+            <td><div class="bar" style="width:217px">3,268</div></td>
+        </tr>
+        <tr>
+            <td><span class="block-name">Telegram</span></td>
+            <td><span class="step step-deliver">deliver</span></td>
+            <td class="block-desc">Send messages via Telegram</td>
+            <td><div class="bar" style="width:170px">2,560</div></td>
+        </tr>
+        <tr>
+            <td><span class="block-name">Gmail</span></td>
+            <td><span class="step step-deliver">deliver</span></td>
+            <td class="block-desc">Send or read emails via Gmail</td>
+            <td><div class="bar" style="width:159px">2,391</div></td>
+        </tr>
+        <tr>
+            <td><span class="block-name">Schedule Trigger</span></td>
+            <td><span class="step step-trigger">trigger</span></td>
+            <td class="block-desc">Run workflow on a schedule</td>
+            <td><div class="bar" style="width:154px">2,324</div></td>
+        </tr>
+        <tr>
+            <td><span class="block-name">Merge</span></td>
+            <td><span class="step step-logic">logic</span></td>
+            <td class="block-desc">Combine data from multiple branches</td>
+            <td><div class="bar" style="width:153px">2,296</div></td>
+        </tr>
+        <tr>
+            <td><span class="block-name">Structured Output</span></td>
+            <td><span class="step step-ai">ai</span></td>
+            <td class="block-desc">Parse AI output into structured data</td>
+            <td><div class="bar" style="width:133px">1,999</div></td>
+        </tr>
+        <tr>
+            <td><span class="block-name">Split In Batches</span></td>
+            <td><span class="step step-logic">logic</span></td>
+            <td class="block-desc">Process items in smaller groups</td>
+            <td><div class="bar" style="width:123px">1,854</div></td>
+        </tr>
+        <tr>
+            <td><span class="block-name">Manual Trigger</span></td>
+            <td><span class="step step-trigger">trigger</span></td>
+            <td class="block-desc">Start workflow with a button click</td>
+            <td><div class="bar" style="width:122px">1,839</div></td>
+        </tr>
+        <tr>
+            <td><span class="block-name">OpenAI</span></td>
+            <td><span class="step step-ai">ai</span></td>
+            <td class="block-desc">Direct OpenAI API calls</td>
+            <td><div class="bar" style="width:122px">1,832</div></td>
+        </tr>
+        <tr>
+            <td><span class="block-name">Google Drive</span></td>
+            <td><span class="step step-storage">storage</span></td>
+            <td class="block-desc">Upload/download files from Drive</td>
+            <td><div class="bar" style="width:118px">1,779</div></td>
+        </tr>
+        <tr>
+            <td><span class="block-name">httpRequestTool</span></td>
+            <td><span class="step step-other">other</span></td>
+            <td class="block-desc"></td>
+            <td><div class="bar" style="width:112px">1,693</div></td>
+        </tr>
+        <tr>
+            <td><span class="block-name">Split Out</span></td>
+            <td><span class="step step-transform">transform</span></td>
+            <td class="block-desc">Split arrays into individual items</td>
+            <td><div class="bar" style="width:105px">1,582</div></td>
+        </tr>
+        <tr>
+            <td><span class="block-name">Webhook</span></td>
+            <td><span class="step step-trigger">trigger</span></td>
+            <td class="block-desc">Receive HTTP requests as triggers</td>
+            <td><div class="bar" style="width:101px">1,525</div></td>
+        </tr>
+        <tr>
+            <td><span class="block-name">Switch</span></td>
+            <td><span class="step step-logic">logic</span></td>
+            <td class="block-desc">Route to different paths by value</td>
+            <td><div class="bar" style="width:99px">1,491</div></td>
+        </tr>
+        <tr>
+            <td><span class="block-name">Slack</span></td>
+            <td><span class="step step-deliver">deliver</span></td>
+            <td class="block-desc">Post messages to Slack channels</td>
+            <td><div class="bar" style="width:97px">1,469</div></td>
+        </tr>
+        <tr>
+            <td><span class="block-name">Google Gemini</span></td>
+            <td><span class="step step-ai">ai</span></td>
+            <td class="block-desc">Gemini language model</td>
+            <td><div class="bar" style="width:93px">1,402</div></td>
+        </tr>
+        <tr>
+            <td><span class="block-name">Aggregate</span></td>
+            <td><span class="step step-transform">transform</span></td>
+            <td class="block-desc">Combine multiple items into one</td>
+            <td><div class="bar" style="width:80px">1,203</div></td>
+        </tr>
+        <tr>
+            <td><span class="block-name">respondToWebhook</span></td>
+            <td><span class="step step-other">other</span></td>
+            <td class="block-desc"></td>
+            <td><div class="bar" style="width:76px">1,147</div></td>
+        </tr>
+        <tr>
+            <td><span class="block-name">LLM Chain</span></td>
+            <td><span class="step step-ai">ai</span></td>
+            <td class="block-desc">Chain multiple AI prompts together</td>
+            <td><div class="bar" style="width:75px">1,137</div></td>
+        </tr>
+        <tr>
+            <td><span class="block-name">Filter</span></td>
+            <td><span class="step step-transform">transform</span></td>
+            <td class="block-desc">Keep only items matching conditions</td>
+            <td><div class="bar" style="width:72px">1,089</div></td>
+        </tr>
+        <tr>
+            <td><span class="block-name">Chat Memory</span></td>
+            <td><span class="step step-ai">ai</span></td>
+            <td class="block-desc">Remember conversation history</td>
+            <td><div class="bar" style="width:70px">1,058</div></td>
+        </tr>
+        <tr>
+            <td><span class="block-name">airtable</span></td>
+            <td><span class="step step-other">other</span></td>
+            <td class="block-desc"></td>
+            <td><div class="bar" style="width:69px">1,038</div></td>
+        </tr>
+        <tr>
+            <td><span class="block-name">Form Trigger</span></td>
+            <td><span class="step step-trigger">trigger</span></td>
+            <td class="block-desc">Start workflow from a web form</td>
+            <td><div class="bar" style="width:57px">869</div></td>
+        </tr>
+        <tr>
+            <td><span class="block-name">postgres</span></td>
+            <td><span class="step step-other">other</span></td>
+            <td class="block-desc"></td>
+            <td><div class="bar" style="width:46px">702</div></td>
+        </tr></tbody>
+  </table>
+</section>
+
+<!-- CATEGORIES -->
+<section id="categories">
+  <h2>Abstract Categories</h2>
+  <p class="section-desc">
+    Every node type is mapped to one of 9 abstract categories.
+    This abstraction reveals the universal patterns behind different tool choices.
+  </p>
+  <div class="chart-container">
+    <canvas id="catChart"></canvas>
+  </div>
+</section>
+
+<!-- TOP PATTERNS -->
+<section id="patterns">
+  <h2>Top 15 Workflow Architectures</h2>
+  <p class="section-desc">
+    The most recurring sequences of categories — the "DNA" of automation.
+    Read left to right: each step shows what kind of action happens at that point.
+  </p>
+  <div class="chart-container-tall" style="margin-bottom:1.5rem;">
+    <canvas id="patChart"></canvas>
+  </div>
+  
+        <div class="pattern-card">
+            <div class="pattern-sig"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-api">api</span> &rarr; <span class="step step-logic">logic</span></div>
+            <div class="pattern-meta">
+                <span class="pattern-count">187x</span>
+                <span class="pattern-examples">httpRequest, splitOut, if, filter, filter, set</span>
+            </div>
+        </div>
+        <div class="pattern-card">
+            <div class="pattern-sig"><span class="step step-other">other</span> &rarr; <span class="step step-trigger">trigger</span></div>
+            <div class="pattern-meta">
+                <span class="pattern-count">116x</span>
+                <span class="pattern-examples">mcpTrigger, bubbleTool, bubbleTool, bubbleTool</span>
+            </div>
+        </div>
+        <div class="pattern-card">
+            <div class="pattern-sig"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-api">api</span></div>
+            <div class="pattern-meta">
+                <span class="pattern-count">95x</span>
+                <span class="pattern-examples">httpRequest, httpRequest, code, set, set, httpRequest</span>
+            </div>
+        </div>
+        <div class="pattern-card">
+            <div class="pattern-sig"><span class="step step-api">api</span> &rarr; <span class="step step-trigger">trigger</span></div>
+            <div class="pattern-meta">
+                <span class="pattern-count">85x</span>
+                <span class="pattern-examples">mcpTrigger, httpRequestTool, httpRequestTool, httpRequestTool, httpRequestTool, httpRequestTool</span>
+            </div>
+        </div>
+        <div class="pattern-card">
+            <div class="pattern-sig"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-logic">logic</span> &rarr; <span class="step step-api">api</span></div>
+            <div class="pattern-meta">
+                <span class="pattern-count">63x</span>
+                <span class="pattern-examples">gmailTrigger, code, set, if, httpRequest, httpRequest</span>
+            </div>
+        </div>
+        <div class="pattern-card">
+            <div class="pattern-sig"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-ai">ai</span></div>
+            <div class="pattern-meta">
+                <span class="pattern-count">62x</span>
+                <span class="pattern-examples">chatTrigger, agent, mcpClientTool, mcpClientTool, lmChatOpenAi</span>
+            </div>
+        </div>
+        <div class="pattern-card">
+            <div class="pattern-sig"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-other">other</span></div>
+            <div class="pattern-meta">
+                <span class="pattern-count">50x</span>
+                <span class="pattern-examples">manualTrigger, powerBi, powerBi</span>
+            </div>
+        </div>
+        <div class="pattern-card">
+            <div class="pattern-sig"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-transform">transform</span></div>
+            <div class="pattern-meta">
+                <span class="pattern-count">49x</span>
+                <span class="pattern-examples">executeWorkflowTrigger, set, set, httpRequest</span>
+            </div>
+        </div>
+        <div class="pattern-card">
+            <div class="pattern-sig"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-logic">logic</span></div>
+            <div class="pattern-meta">
+                <span class="pattern-count">48x</span>
+                <span class="pattern-examples">set, merge, merge, scheduleTrigger, scheduleTrigger</span>
+            </div>
+        </div>
+        <div class="pattern-card">
+            <div class="pattern-sig"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-api">api</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-data">data</span></div>
+            <div class="pattern-meta">
+                <span class="pattern-count">47x</span>
+                <span class="pattern-examples">formTrigger, googleSheets, httpRequest, code</span>
+            </div>
+        </div>
+        <div class="pattern-card">
+            <div class="pattern-sig"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-api">api</span> &rarr; <span class="step step-logic">logic</span> &rarr; <span class="step step-deliver">deliver</span></div>
+            <div class="pattern-meta">
+                <span class="pattern-count">47x</span>
+                <span class="pattern-examples">webhook, set, httpRequest, code, if, gmail</span>
+            </div>
+        </div>
+        <div class="pattern-card">
+            <div class="pattern-sig"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-api">api</span> &rarr; <span class="step step-transform">transform</span></div>
+            <div class="pattern-meta">
+                <span class="pattern-count">42x</span>
+                <span class="pattern-examples">httpRequest, chatTrigger, code</span>
+            </div>
+        </div>
+        <div class="pattern-card">
+            <div class="pattern-sig"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-api">api</span> &rarr; <span class="step step-logic">logic</span> &rarr; <span class="step step-data">data</span></div>
+            <div class="pattern-meta">
+                <span class="pattern-count">42x</span>
+                <span class="pattern-examples">splitOut, splitOut, splitOut, set, nocoDb, nocoDb</span>
+            </div>
+        </div>
+        <div class="pattern-card">
+            <div class="pattern-sig"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-ai">ai</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-deliver">deliver</span></div>
+            <div class="pattern-meta">
+                <span class="pattern-count">38x</span>
+                <span class="pattern-examples">webhook, chainLlm, lmChatOpenRouter, code, respondToWebhook, gmail</span>
+            </div>
+        </div>
+        <div class="pattern-card">
+            <div class="pattern-sig"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-ai">ai</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-api">api</span></div>
+            <div class="pattern-meta">
+                <span class="pattern-count">37x</span>
+                <span class="pattern-examples">httpRequest, httpRequest, httpRequest, httpRequest, httpRequest, httpRequest</span>
+            </div>
+        </div>
+</section>
+
+<!-- CONNECTIONS -->
+<section id="connections">
+  <h2>How Categories Connect</h2>
+  <p class="section-desc">
+    Which categories feed into which? This shows the most frequent
+    category-to-category edges across all workflows.
+  </p>
+  <table>
+    <thead><tr><th>From</th><th>To</th><th>Frequency</th></tr></thead>
+    <tbody><tr><td><span class="step step-ai">ai</span></td><td><span class="step step-ai">ai</span></td><td><div class="bar" style="width:250px">14,519</div></td></tr><tr><td><span class="step step-transform">transform</span></td><td><span class="step step-transform">transform</span></td><td><div class="bar" style="width:250px">7,183</div></td></tr><tr><td><span class="step step-transform">transform</span></td><td><span class="step step-logic">logic</span></td><td><div class="bar" style="width:250px">6,183</div></td></tr><tr><td><span class="step step-logic">logic</span></td><td><span class="step step-transform">transform</span></td><td><div class="bar" style="width:250px">6,084</div></td></tr><tr><td><span class="step step-api">api</span></td><td><span class="step step-transform">transform</span></td><td><div class="bar" style="width:250px">4,179</div></td></tr><tr><td><span class="step step-trigger">trigger</span></td><td><span class="step step-transform">transform</span></td><td><div class="bar" style="width:250px">4,057</div></td></tr><tr><td><span class="step step-transform">transform</span></td><td><span class="step step-api">api</span></td><td><div class="bar" style="width:250px">3,905</div></td></tr><tr><td><span class="step step-transform">transform</span></td><td><span class="step step-ai">ai</span></td><td><div class="bar" style="width:250px">3,387</div></td></tr><tr><td><span class="step step-transform">transform</span></td><td><span class="step step-data">data</span></td><td><div class="bar" style="width:250px">3,055</div></td></tr><tr><td><span class="step step-ai">ai</span></td><td><span class="step step-transform">transform</span></td><td><div class="bar" style="width:250px">2,929</div></td></tr><tr><td><span class="step step-logic">logic</span></td><td><span class="step step-logic">logic</span></td><td><div class="bar" style="width:250px">2,641</div></td></tr><tr><td><span class="step step-logic">logic</span></td><td><span class="step step-api">api</span></td><td><div class="bar" style="width:250px">2,635</div></td></tr><tr><td><span class="step step-logic">logic</span></td><td><span class="step step-deliver">deliver</span></td><td><div class="bar" style="width:250px">2,631</div></td></tr><tr><td><span class="step step-logic">logic</span></td><td><span class="step step-data">data</span></td><td><div class="bar" style="width:250px">2,340</div></td></tr><tr><td><span class="step step-api">api</span></td><td><span class="step step-logic">logic</span></td><td><div class="bar" style="width:250px">2,237</div></td></tr></tbody>
+  </table>
+</section>
+
+<footer>
+  <p>
+    Built with <a href="https://github.com/janrummel/workflow-patterns">workflow-patterns</a>
+    &middot; Data: <a href="https://github.com/nusquama/n8nworkflows.xyz">n8nworkflows.xyz</a>
+    &middot; Powered by Claude Code
+  </p>
+</footer>
+
+</div>
+
+<script>
+const catColors = {
+  trigger:'#3fb950', ai:'#d2a8ff', transform:'#58a6ff',
+  deliver:'#f78166', data:'#56d4dd', api:'#e3b341',
+  logic:'#8b949e', storage:'#79c0ff', other:'#484f58'
+};
+
+// Use case chart
+new Chart(document.getElementById('ucChart'), {
+  type:'bar',
+  data:{
+    labels:["AI Chatbot / Assistant", "AI Content Creation", "Email Automation", "Social Media Automation", "Data Pipeline / ETL", "Document Processing", "Form / Webhook Handler", "API Integration / Sync", "AI Data Analysis", "Scheduled Notifications", "Lead Gen / CRM", "RAG / Knowledge Base"],
+    datasets:[{ data:[2816, 2150, 1329, 1300, 1127, 1096, 891, 738, 734, 591, 536, 333], backgroundColor:'#58a6ff', borderRadius:4 }]
+  },
+  options:{
+    indexAxis:'y', responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:c=>c.parsed.x.toLocaleString()+' workflows' } } },
+    scales:{
+      x:{ ticks:{color:'#8b949e'}, grid:{color:'#30363d'} },
+      y:{ ticks:{color:'#e6edf3',font:{size:12}}, grid:{display:false} }
+    }
+  }
+});
+
+// Complexity tier chart
+new Chart(document.getElementById('tierChart'), {
+  type:'doughnut',
+  data:{
+    labels:["Quick Automation", "Standard Workflow", "Medium Pipeline", "Complex System", "Enterprise Pipeline"],
+    datasets:[{ data:[292, 1080, 1960, 2929, 1437], backgroundColor:['#3fb950','#58a6ff','#e3b341','#f78166','#d2a8ff'], borderWidth:0 }]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{
+      legend:{ position:'right', labels:{color:'#e6edf3',padding:16,font:{size:13}} },
+      tooltip:{ callbacks:{ label:c=>c.label+': '+c.parsed.toLocaleString()+' workflows' } }
+    }
+  }
+});
+
+// Category chart
+new Chart(document.getElementById('catChart'), {
+  type:'bar',
+  data:{
+    labels:["transform", "ai", "api", "logic", "trigger", "data", "deliver", "other", "storage"],
+    datasets:[{ data:[27309, 21636, 14009, 12485, 12209, 11692, 8722, 4539, 2585], backgroundColor:["transform", "ai", "api", "logic", "trigger", "data", "deliver", "other", "storage"].map(l=>catColors[l]||'#484f58'), borderRadius:4 }]
+  },
+  options:{
+    indexAxis:'y', responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:c=>c.parsed.x.toLocaleString()+' nodes' } } },
+    scales:{
+      x:{ ticks:{color:'#8b949e',callback:v=>v.toLocaleString()}, grid:{color:'#30363d'} },
+      y:{ ticks:{color:'#e6edf3',font:{size:14,weight:'bold'}}, grid:{display:false} }
+    }
+  }
+});
+
+// Pattern chart
+new Chart(document.getElementById('patChart'), {
+  type:'bar',
+  data:{
+    labels:["trigger -> transform -> api -> logic", "other -> trigger", "trigger -> transform -> api", "api -> trigger", "trigger -> transform -> logic -> api", "trigger -> ai", "trigger -> other", "trigger -> transform", "trigger -> transform -> logic", "trigger -> api -> transform -> data", "trigger -> transform -> api -> logic -> deliver", "trigger -> api -> transform", "trigger -> transform -> api -> logic -> data", "trigger -> ai -> transform -> deliver", "trigger -> ai -> transform -> api", "trigger -> transform -> api -> data", "trigger -> ai -> deliver", "trigger -> api -> transform -> logic", "trigger -> ai -> transform -> api -> logic", "trigger -> api", "trigger -> transform -> api -> deliver", "trigger -> ai -> transform", "trigger -> ai -> transform -> logic -> deliver", "trigger -> api -> transform -> deliver", "trigger -> ai -> transform -> logic"],
+    datasets:[{ data:[187, 116, 95, 85, 63, 62, 50, 49, 48, 47, 47, 42, 42, 38, 37, 37, 36, 36, 35, 35, 35, 33, 33, 33, 32], backgroundColor:'#58a6ff', borderRadius:3 }]
+  },
+  options:{
+    indexAxis:'y', responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:c=>c.parsed.x+' workflows' } } },
+    scales:{
+      x:{ ticks:{color:'#8b949e'}, grid:{color:'#30363d'} },
+      y:{ ticks:{color:'#e6edf3',font:{size:11}}, grid:{display:false} }
+    }
+  }
+});
+</script>
+</body>
+</html>
