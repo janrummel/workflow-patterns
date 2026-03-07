@@ -1,19 +1,38 @@
-# Workflow Patterns
+<p align="center">
+  <h1 align="center">Workflow Patterns</h1>
+  <p align="center">
+    What do 7,698 real-world automation workflows have in common?<br/>
+    We extracted the universal patterns — and turned them into explorable blueprints.
+  </p>
+  <p align="center">
+    <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>
+    <a href="https://docs.anthropic.com/en/docs/claude-code"><img src="https://img.shields.io/badge/built_for-Claude_Code-cc785c.svg" alt="Built for Claude Code"></a>
+    <img src="https://img.shields.io/badge/workflows_analyzed-7%2C698-58a6ff.svg" alt="7,698 Workflows">
+    <img src="https://img.shields.io/badge/unique_patterns-2%2C592-d2a8ff.svg" alt="2,592 Patterns">
+  </p>
+</p>
 
-Analyze 7,000+ real-world automation workflows to extract recurring patterns — and translate them into Claude Code architectures.
+---
 
-## What it does
+> We parsed 7,698 [n8n](https://n8n.io) workflow JSONs, mapped 80+ node types to 9 abstract categories, and extracted the recurring patterns behind everyday automation. The result: an **interactive explorer** with blueprints for 12 use cases, and an **MCP server** that lets Claude Code query the pattern database directly.
 
-1. **Parses** n8n workflow JSONs into abstract graph models (nodes + edges)
-2. **Analyzes** patterns across workflows (categories, connections, frequency)
-3. **Translates** patterns into Claude Code building blocks (MCP servers, skills, agents, scripts)
-4. **Serves** everything as an MCP server that Claude can query
+---
 
-## Why
+![Workflow Patterns Explorer](docs/screenshot-wizard.png)
 
-People build automation workflows in tools like n8n every day. The patterns behind these workflows (trigger -> transform -> deliver, etc.) are universal — they apply regardless of the platform.
+## The Idea
 
-This project extracts those patterns from 7,000+ real workflows and helps you implement them with Claude Code instead of a drag-and-drop UI.
+People build automation workflows every day — in n8n, Make, Zapier, or with code. The tools differ, but the **patterns are universal**:
+
+```
+trigger -> ai -> deliver        (AI writes content, sends it somewhere)
+trigger -> transform -> data    (data arrives, gets cleaned, gets stored)
+trigger -> api -> logic -> api  (two systems talk to each other)
+```
+
+These patterns repeat across thousands of workflows. If you know the pattern, you know the architecture — regardless of which tools you use.
+
+**This project extracts those patterns from real data and makes them actionable.**
 
 ## Quick Start
 
@@ -21,10 +40,87 @@ This project extracts those patterns from 7,000+ real workflows and helps you im
 git clone https://github.com/janrummel/workflow-patterns
 cd workflow-patterns
 uv sync
-uv run pytest -v
+
+# Generate the interactive site
+uv run python scripts/generate_site.py
+open docs/index.html
+
+# Or use as MCP server with Claude Code
+claude --mcp-config mcp.json
 ```
 
-### Use as MCP server with Claude Code
+## Key Findings
+
+| Insight | Detail |
+|---------|--------|
+| **7,698** workflows analyzed | From the [n8nworkflows.xyz](https://github.com/nusquama/n8nworkflows.xyz) public archive |
+| **2,592** unique patterns | Distinct category sequences found across all workflows |
+| **12 use case clusters** | AI Chatbot, Content Creation, Data Pipeline, Email Automation, and more |
+| Most common pattern | `trigger -> transform -> api -> logic` (187 workflows) |
+| AI is mainstream | 45%+ of workflows include at least one AI node |
+| Most workflows are small | 4-6 nodes is the sweet spot — you don't need 20 steps |
+
+## Interactive Explorer
+
+The site lets you pick a use case and instantly get a complete blueprint:
+
+- The **pattern** as an abstract step sequence
+- **Building blocks** needed to implement it
+- **Tools & services** grouped by category — showing alternatives, not just the most popular
+- **Starter code** in Python with syntax highlighting
+- **Claude Code architecture** recommendation
+
+![Blueprint View](docs/screenshot-blueprint.png)
+
+### View locally
+
+```bash
+open docs/index.html
+```
+
+## How It Works
+
+```
+n8n JSON files (7,698 workflows)
+    |
+    v  parse
+Workflow objects (nodes + edges)
+    |  handles inconsistent JSON formats: null connections,
+    |  string-wrapped lists, missing fields
+    v  categorize
+Abstract graphs (80+ node types -> 9 categories)
+    |  "lmChatOpenAi" -> ai
+    |  "googleSheets"  -> data
+    |  "gmail"         -> deliver
+    v  analyze
+Patterns, statistics, use case clusters
+    |  BFS graph traversal for pattern extraction
+    |  Jaccard similarity for workflow matching
+    v  translate
+Claude Code architectures
+    |  pattern -> MCP servers + agents + scripts
+    v  serve
+Interactive site  +  MCP server for Claude Code
+```
+
+## The 9 Categories
+
+Every node type maps to one abstract category. This is what makes patterns universal — the specific tool doesn't matter, only its role in the workflow.
+
+| Category | What it represents | Example nodes | Claude Code equivalent |
+|----------|-------------------|---------------|----------------------|
+| **trigger** | Starts the workflow | scheduleTrigger, webhook, formTrigger | Cron job, file watcher |
+| **ai** | LLM processing | openAi, lmChatOpenAi, agent | Claude agent |
+| **transform** | Reshape data | set, code, filter, aggregate | Python script |
+| **deliver** | Send output | gmail, slack, telegram | MCP server |
+| **data** | Read/write storage | googleSheets, postgres, airtable | MCP server |
+| **api** | Call external APIs | httpRequest | MCP server |
+| **logic** | Branch, route, merge | if, switch, merge | Claude skill |
+| **storage** | File operations | googleDrive, s3 | MCP server |
+
+## MCP Server
+
+The project includes an MCP server that exposes pattern analysis to Claude Code. Connect it and ask natural language questions about automation patterns.
 
 ```bash
 claude --mcp-config mcp.json
@@ -34,61 +130,60 @@ Then ask Claude:
 
 > "I want to build a workflow that fetches news articles weekly, summarizes them with AI, and sends a digest by email."
 
-Claude will use the MCP tools to find matching patterns and suggest a Claude Code architecture.
+Claude will search the pattern database, find matching workflows, and suggest an architecture:
 
-## MCP Tools
+```
+**Query:** Send a weekly AI summary of news articles by email
+**Detected categories:** trigger, ai, deliver
 
-| Tool | Description |
+**Matching workflows:**
+- [80% match] Weekly AI Newsletter
+  Pattern: trigger -> ai -> transform -> deliver
+- [60% match] RSS Digest Bot
+  Pattern: trigger -> api -> ai -> deliver
+
+**Suggested pattern:** trigger -> ai -> deliver
+```
+
+| Tool | What it does |
 |------|-------------|
 | `search_patterns(query)` | Find patterns matching a natural language description |
 | `suggest_implementation(pattern)` | Get Claude Code architecture for a pattern |
-| `list_categories()` | Show category statistics and common connections |
+| `list_categories()` | Show category frequency and common connections |
 | `show_all_patterns()` | List all unique patterns ranked by frequency |
 
-## Pattern Categories
+## Development
 
-Workflows are decomposed into abstract categories:
-
-| Category | What it represents | Claude Code equivalent |
-|----------|-------------------|----------------------|
-| trigger | Event or schedule that starts the workflow | Cron job, file watcher |
-| ai | LLM processing (summarize, analyze, generate) | Claude agent |
-| transform | Data reshaping, filtering, enrichment | Python script |
-| deliver | Send output (email, Slack, webhook) | MCP server |
-| data | Read/write database or spreadsheet | MCP server |
-| api | Call external HTTP APIs | MCP server |
-| logic | Conditional branching, routing | Claude skill |
-| storage | File storage (Drive, S3, local) | MCP server |
+```bash
+uv run pytest -v          # 20 tests across 4 modules
+uv run ruff check .       # Lint
+```
 
 ## Project Structure
 
 ```
 workflow-patterns/
 ├── src/workflow_patterns/
-│   ├── models.py              # Data models (Node, Edge, Workflow, Pattern)
-│   ├── parser/parse.py        # n8n JSON -> Workflow objects
-│   ├── patterns/analyzer.py   # Pattern extraction & similarity search
-│   ├── translator/claude_code.py  # Pattern -> Claude Code architecture
-│   └── mcp_server/server.py   # MCP server exposing all tools
-├── tests/                     # 20 unit tests
-├── evals/                     # 10 evaluation test cases
-├── data/sample_workflows/     # Sample n8n workflow JSONs
-├── .github/workflows/ci.yml   # CI pipeline (lint + test)
-└── mcp.json                   # MCP server config for Claude Code
-```
-
-## Running Tests
-
-```bash
-uv run pytest -v          # Unit tests (20 tests)
-uv run ruff check src/    # Linting
-uv run python evals/run_evals.py  # Evaluation suite (10 cases)
+│   ├── models.py                  # Node, Edge, Workflow, Pattern + 80+ node type mappings
+│   ├── parser/parse.py            # Robust n8n JSON parser (handles format inconsistencies)
+│   ├── patterns/analyzer.py       # Pattern extraction, node stats, Jaccard similarity
+│   ├── translator/claude_code.py  # Pattern -> Claude Code architecture mapping
+│   └── mcp_server/server.py       # 4 MCP tools for Claude Code integration
+├── scripts/
+│   └── generate_site.py           # Static site generator with interactive wizard
+├── docs/
+│   └── index.html                 # Generated GitHub Pages site
+├── tests/                         # 20 unit tests across 4 modules
+├── evals/                         # 10 evaluation test cases
+├── data/sample_workflows/         # 15 sample n8n workflows for development
+├── .github/workflows/ci.yml       # CI: lint + test on push/PR
+└── mcp.json                       # MCP server config for Claude Code
 ```
 
 ## Data Source
 
-Workflow data comes from [n8nworkflows.xyz](https://github.com/nusquama/n8nworkflows.xyz), an independent archive of 7,000+ public n8n workflow templates. The sample dataset includes 15 workflows for development; the full dataset can be loaded by cloning the source repository into `data/`.
+Workflow data from [n8nworkflows.xyz](https://github.com/nusquama/n8nworkflows.xyz), an independent archive of 7,000+ public n8n workflow templates. The sample dataset includes 15 workflows for development; the full dataset (7,698 workflows) can be placed in `data/all_workflows/`.
 
 ## License
 
-MIT
+[MIT](LICENSE)
