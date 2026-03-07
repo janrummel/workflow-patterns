@@ -17,10 +17,13 @@ NODE_CATEGORIES = {
     "webhook": "trigger",
     "schedule": "trigger",
     "cron": "trigger",
+    "form": "trigger",
+    "rssFeedRead": "trigger",
     # AI / LLM
     "langchain": "ai",
     "openAi": "ai",
     "anthropic": "ai",
+    "summarize": "ai",
     # Data sources
     "googleSheets": "data",
     "postgres": "data",
@@ -29,31 +32,85 @@ NODE_CATEGORIES = {
     "airtable": "data",
     "nocodb": "data",
     "supabase": "data",
+    "redis": "data",
+    "notion": "data",
+    "hubspot": "data",
+    "dataTable": "data",
+    "googleCalendar": "data",
     # Communication / Delivery
     "gmail": "deliver",
     "slack": "deliver",
     "telegram": "deliver",
     "discord": "deliver",
     "email": "deliver",
+    "whatsApp": "deliver",
     # Transform / Logic
     "set": "transform",
     "code": "transform",
     "function": "transform",
+    "filter": "transform",
+    "splitOut": "transform",
+    "aggregate": "transform",
+    "limit": "transform",
+    "removeDuplicates": "transform",
+    "markdown": "transform",
+    "html": "transform",
+    "extractFromFile": "transform",
+    "convertToFile": "transform",
     "if": "logic",
     "switch": "logic",
     "merge": "logic",
     "splitInBatches": "logic",
+    "executeWorkflow": "logic",
     # HTTP / API
     "httpRequest": "api",
     "http": "api",
+    "facebookGraphApi": "api",
+    "github": "api",
     # Storage
     "googleDrive": "storage",
+    "googleDocs": "storage",
     "s3": "storage",
     "ftp": "storage",
+    "readWriteFile": "storage",
+    # Additional triggers / scheduling
+    "dateTime": "transform",
+    # Additional AI
+    "scrapegraphAi": "ai",
+    "perplexity": "ai",
+    "evaluation": "ai",
+    "mcpClientTool": "ai",
+    # Additional data sources
+    "jira": "data",
+    "clickUp": "data",
+    "pipedrive": "data",
+    "pipedriveTool": "data",
+    "quickbooks": "data",
+    "baserow": "data",
+    # Additional communication / delivery
+    "microsoftOutlook": "deliver",
+    "twilio": "deliver",
+    "linkedIn": "deliver",
+    "twitter": "deliver",
+    "reddit": "deliver",
+    # Additional transform
+    "sort": "transform",
+    "xml": "transform",
+    "crypto": "transform",
+    "editImage": "transform",
+    "executeCommand": "transform",
+    # Additional API / web
+    "wordpress": "api",
+    "youTube": "api",
+    "ssh": "api",
+    "browserAct": "api",
+    "airtop": "api",
+    "evolutionApi": "api",
+    "highLevelTool": "api",
 }
 
 # Nodes to skip (not meaningful for pattern analysis)
-SKIP_NODES = {"stickyNote", "noOp", "start"}
+SKIP_NODES = {"stickyNote", "noOp", "start", "wait", "stopAndError", "n8n", "blotato", "klicktipp"}
 
 
 @dataclass

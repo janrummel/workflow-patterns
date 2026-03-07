@@ -32,15 +32,25 @@ def parse_workflow(workflow_path: Path, metadata_path: Path | None = None) -> Wo
             category=category,
         ))
 
-    # Parse connections
+    # Parse connections (handles inconsistent n8n JSON formats)
     edges = []
-    for source_name, conn_data in data.get("connections", {}).items():
-        for conn_type_data in conn_data.values():
-            for connection_list in conn_type_data:
-                for conn in connection_list:
-                    target_name = conn.get("node", "")
-                    if target_name:
-                        edges.append(Edge(source=source_name, target=target_name))
+    connections = data.get("connections", {})
+    if isinstance(connections, dict):
+        for source_name, conn_data in connections.items():
+            if not isinstance(conn_data, dict):
+                continue
+            for conn_type_data in conn_data.values():
+                if not isinstance(conn_type_data, list):
+                    continue
+                for connection_list in conn_type_data:
+                    if not isinstance(connection_list, list):
+                        continue
+                    for conn in connection_list:
+                        if not isinstance(conn, dict):
+                            continue
+                        target_name = conn.get("node", "")
+                        if target_name:
+                            edges.append(Edge(source=source_name, target=target_name))
 
     # Parse metadata if available
     author = ""
