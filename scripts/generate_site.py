@@ -8,6 +8,7 @@ Usage:
 """
 
 import json
+from collections import Counter
 from pathlib import Path
 
 from workflow_patterns.parser.parse import parse_directory
@@ -212,8 +213,6 @@ def detect_use_cases(workflows):
         matching = [wf for wf in workflows if uc["check"](wf)]
         avg_nodes = sum(len(wf.nodes) for wf in matching) / max(len(matching), 1)
         # Top pattern for this use case
-        from collections import Counter
-
         sig_counter = Counter(wf.simple_signature for wf in matching)
         top_pattern = sig_counter.most_common(1)[0] if sig_counter else ("unknown", 0)
         results[name] = {
