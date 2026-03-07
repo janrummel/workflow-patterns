@@ -100,6 +100,52 @@ th { color:var(--text-muted); font-weight:600; font-size:0.8rem; text-transform:
 footer { text-align:center; color:var(--text-muted); padding:2rem 0; font-size:0.85rem; border-top:1px solid var(--border); margin-top:2rem; }
 footer a { color:var(--accent); text-decoration:none; }
 code { background:var(--surface2); padding:2px 6px; border-radius:4px; font-size:0.85rem; }
+
+/* Wizard */
+.wizard-section { border:2px solid var(--accent); }
+.wizard-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:1rem; }
+.wizard-card {
+  background:var(--bg); border:1px solid var(--border); border-radius:8px;
+  padding:1.2rem; cursor:pointer; transition:all 0.2s;
+}
+.wizard-card:hover { border-color:var(--accent); transform:translateY(-2px); }
+.wizard-card-icon { font-size:1.5rem; margin-bottom:0.3rem; }
+.wizard-card h4 { font-size:0.95rem; margin:0.3rem 0; }
+.wizard-card p { color:var(--text-muted); font-size:0.85rem; margin:0; font-style:italic; }
+.wizard-card .wizard-card-count { color:var(--accent); font-size:0.75rem; margin-top:0.4rem; }
+.wizard-back {
+  background:none; border:1px solid var(--border); color:var(--accent);
+  padding:6px 16px; border-radius:6px; cursor:pointer; margin-bottom:1.5rem;
+  font-size:0.9rem; transition:all 0.2s;
+}
+.wizard-back:hover { background:var(--accent); color:var(--bg); }
+.wizard-result-header { display:flex; align-items:center; gap:0.8rem; margin-bottom:1rem; }
+.wizard-result-header h3 { margin:0; font-size:1.3rem; }
+.wizard-columns { display:grid; grid-template-columns:1fr 1fr; gap:2rem; margin-top:1rem; }
+@media (max-width:900px) { .wizard-columns { grid-template-columns:1fr; } }
+.wizard-col { min-width:0; }
+.wiz-label { color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; font-weight:600; letter-spacing:0.5px; margin:1rem 0 0.3rem; }
+.wiz-label:first-child { margin-top:0; }
+.wiz-pattern-display { font-size:1.1rem; padding:0.5rem 0; }
+.wiz-tools-list, .wiz-learn-list { list-style:none; padding:0; }
+.wiz-tools-list li { padding:3px 0; font-size:0.9rem; }
+.wiz-tools-list li::before { content:"\2022 "; color:var(--accent); font-weight:bold; }
+.wiz-learn-list li { padding:2px 0; font-size:0.85rem; color:var(--text-muted); }
+.wiz-learn-list li::before { content:"\2713 "; color:var(--green); }
+.wiz-run { display:block; padding:8px 12px; margin-top:4px; font-size:0.85rem; word-break:break-all; }
+.wiz-apps { display:flex; flex-wrap:wrap; gap:6px; margin-top:4px; }
+.wiz-app {
+  display:inline-flex; align-items:center; gap:5px;
+  background:var(--bg); border:1px solid var(--border); border-radius:14px;
+  padding:3px 10px; font-size:0.8rem;
+}
+.wiz-app-count { color:var(--text-muted); font-size:0.7rem; }
+.wiz-code {
+  background:var(--bg); border:1px solid var(--border); border-radius:6px;
+  padding:1rem; font-size:0.8rem; line-height:1.5; overflow-x:auto;
+  white-space:pre; font-family:'SF Mono',SFMono-Regular,Consolas,monospace;
+  max-height:500px; overflow-y:auto;
+}
 </style>
 </head>
 <body>
@@ -115,6 +161,7 @@ code { background:var(--surface2); padding:2px 6px; border-radius:4px; font-size
 </header>
 
 <nav>
+  <a href="#wizard">Build a Workflow</a>
   <a href="#use-cases">Use Cases</a>
   <a href="#complexity">Complexity</a>
   <a href="#building-blocks">Building Blocks</a>
@@ -122,6 +169,56 @@ code { background:var(--surface2); padding:2px 6px; border-radius:4px; font-size
   <a href="#patterns">Top Patterns</a>
   <a href="#connections">Connections</a>
 </nav>
+
+<!-- WIZARD -->
+<section id="wizard" class="wizard-section">
+  <h2>Build Your Workflow</h2>
+  <p class="section-desc">Pick what you want to automate. Get the pattern, the tools, and a code starter — based on 7,698 real workflows.</p>
+
+  <div id="wizard-step1">
+    <div class="wizard-grid" id="wizard-cards"></div>
+  </div>
+
+  <div id="wizard-step2" style="display:none;">
+    <button class="wizard-back" onclick="wizardBack()">&larr; Pick a different use case</button>
+    <div class="wizard-result">
+      <div class="wizard-result-header">
+        <span id="wiz-icon" class="uc-icon"></span>
+        <div>
+          <h3 id="wiz-name"></h3>
+          <span id="wiz-stats" class="uc-count"></span>
+        </div>
+      </div>
+      <p id="wiz-desc" class="uc-desc"></p>
+
+      <div class="wizard-columns">
+        <div class="wizard-col">
+          <div class="wiz-label">Pattern</div>
+          <div id="wiz-pattern" class="wiz-pattern-display"></div>
+
+          <div class="wiz-label">Building blocks you need</div>
+          <ul id="wiz-tools" class="wiz-tools-list"></ul>
+
+          <div class="wiz-label">Popular apps &amp; services used</div>
+          <div id="wiz-apps" class="wiz-apps"></div>
+
+          <div class="wiz-label">What you'll learn</div>
+          <ul id="wiz-learn" class="wiz-learn-list"></ul>
+
+          <div class="wiz-label">Claude Code approach</div>
+          <p id="wiz-claude" class="claude-approach"></p>
+
+          <div class="wiz-label">How to run it</div>
+          <code id="wiz-run" class="wiz-run"></code>
+        </div>
+        <div class="wizard-col">
+          <div class="wiz-label">Starter code</div>
+          <pre id="wiz-code" class="wiz-code"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
 <div class="stats-grid">
   <div class="stat-card"><div class="stat-number">7,698</div><div class="stat-label">Workflows Analyzed</div></div>
@@ -992,6 +1089,873 @@ new Chart(document.getElementById('patChart'), {
     }
   }
 });
+
+// --- Wizard ---
+const wizardData = [
+  {
+    "name": "AI Chatbot / Assistant",
+    "icon": "\ud83e\udd16",
+    "question": "People keep asking me the same questions",
+    "desc": "Conversational AI agents with memory, tools, and context awareness.",
+    "pattern": "trigger -> ai -> data -> deliver",
+    "tools": [
+      "Chat Trigger",
+      "Claude Agent",
+      "Memory Buffer",
+      "Data Source (MCP)"
+    ],
+    "apps": [
+      {
+        "name": "OpenAI GPT-4",
+        "cat": "ai",
+        "count": 2854
+      },
+      {
+        "name": "Google Gemini",
+        "cat": "ai",
+        "count": 1068
+      },
+      {
+        "name": "Google Sheets",
+        "cat": "data",
+        "count": 2105
+      },
+      {
+        "name": "Telegram",
+        "cat": "deliver",
+        "count": 1279
+      },
+      {
+        "name": "Gmail",
+        "cat": "deliver",
+        "count": 1008
+      },
+      {
+        "name": "Slack",
+        "cat": "deliver",
+        "count": 490
+      },
+      {
+        "name": "Pinecone",
+        "cat": "storage",
+        "count": 208
+      },
+      {
+        "name": "Supabase",
+        "cat": "data",
+        "count": 180
+      }
+    ],
+    "code": "from anthropic import Anthropic\n\nclient = Anthropic()\nconversation = []\n\ndef chat(user_message):\n    conversation.append({\"role\": \"user\", \"content\": user_message})\n    response = client.messages.create(\n        model=\"claude-sonnet-4-20250514\",\n        system=\"You are a helpful assistant. Answer based on the knowledge base.\",\n        messages=conversation,\n    )\n    reply = response.content[0].text\n    conversation.append({\"role\": \"assistant\", \"content\": reply})\n    return reply",
+    "run": "python chatbot.py  # or expose as MCP server",
+    "learn": [
+      "Claude API basics",
+      "Conversation memory",
+      "System prompts",
+      "MCP tool design"
+    ],
+    "claude_code": "Claude agent + MCP servers for data access + CLAUDE.md for behavior",
+    "count": 2816,
+    "pct": 36.58093011171733,
+    "avg_nodes": 18.986150568181817
+  },
+  {
+    "name": "AI Content Creation",
+    "icon": "\u270d\ufe0f",
+    "question": "I regularly write similar content (newsletters, posts, summaries)",
+    "desc": "Generate text, images, or media with AI and deliver via email, Slack, or CMS.",
+    "pattern": "trigger -> api -> ai -> deliver",
+    "tools": [
+      "Schedule/Cron",
+      "HTTP Request",
+      "Claude API",
+      "Email/Slack"
+    ],
+    "apps": [
+      {
+        "name": "OpenAI GPT-4",
+        "cat": "ai",
+        "count": 1632
+      },
+      {
+        "name": "Telegram",
+        "cat": "deliver",
+        "count": 1712
+      },
+      {
+        "name": "Gmail",
+        "cat": "deliver",
+        "count": 1686
+      },
+      {
+        "name": "Google Sheets",
+        "cat": "data",
+        "count": 1848
+      },
+      {
+        "name": "WordPress",
+        "cat": "api",
+        "count": 220
+      },
+      {
+        "name": "Slack",
+        "cat": "deliver",
+        "count": 380
+      },
+      {
+        "name": "Discord",
+        "cat": "deliver",
+        "count": 150
+      },
+      {
+        "name": "OpenRouter",
+        "cat": "ai",
+        "count": 350
+      }
+    ],
+    "code": "import anthropic, requests, smtplib\nfrom email.message import EmailMessage\n\n# 1. Fetch content\narticles = requests.get(\"https://api.example.com/articles?days=7\").json()\n\n# 2. Summarize with Claude\nclient = anthropic.Anthropic()\nsummary = client.messages.create(\n    model=\"claude-sonnet-4-20250514\",\n    messages=[{\"role\": \"user\", \"content\": f\"Summarize these articles:\\n{articles}\"}],\n).content[0].text\n\n# 3. Send digest\nmsg = EmailMessage()\nmsg[\"Subject\"] = \"Your Weekly Digest\"\nmsg.set_content(summary)\n# ... send via SMTP",
+    "run": "crontab: 0 7 * * 1 python weekly_digest.py",
+    "learn": [
+      "REST API calls",
+      "Claude for summarization",
+      "Email automation",
+      "Cron scheduling"
+    ],
+    "claude_code": "Cron trigger + Claude agent for content + MCP server for delivery",
+    "count": 2150,
+    "pct": 27.929332294102366,
+    "avg_nodes": 19.02093023255814
+  },
+  {
+    "name": "Data Pipeline / ETL",
+    "icon": "\ud83d\udd04",
+    "question": "I copy data from A to B, always the same way",
+    "desc": "Move, transform, and sync data between databases, sheets, and APIs.",
+    "pattern": "trigger -> data -> transform -> data",
+    "tools": [
+      "Schedule/Cron",
+      "Database/Sheets Reader",
+      "Python Transform",
+      "Database Writer"
+    ],
+    "apps": [
+      {
+        "name": "Google Sheets",
+        "cat": "data",
+        "count": 1965
+      },
+      {
+        "name": "Airtable",
+        "cat": "data",
+        "count": 302
+      },
+      {
+        "name": "Gmail",
+        "cat": "deliver",
+        "count": 348
+      },
+      {
+        "name": "PostgreSQL",
+        "cat": "data",
+        "count": 120
+      },
+      {
+        "name": "MySQL",
+        "cat": "data",
+        "count": 85
+      },
+      {
+        "name": "Notion",
+        "cat": "data",
+        "count": 110
+      },
+      {
+        "name": "Supabase",
+        "cat": "data",
+        "count": 95
+      },
+      {
+        "name": "MongoDB",
+        "cat": "data",
+        "count": 45
+      }
+    ],
+    "code": "import csv, sqlite3\n\n# 1. Read source (CSV, API, database...)\nwith open(\"input.csv\") as f:\n    rows = list(csv.DictReader(f))\n\n# 2. Transform\ncleaned = [\n    {\"name\": r[\"name\"].strip(), \"value\": float(r[\"amount\"])}\n    for r in rows if r[\"amount\"]\n]\n\n# 3. Write to destination\ndb = sqlite3.connect(\"output.db\")\ndb.executemany(\"INSERT INTO records (name, value) VALUES (?, ?)\",\n    [(r[\"name\"], r[\"value\"]) for r in cleaned])\ndb.commit()",
+    "run": "crontab: 0 * * * * python sync_data.py",
+    "learn": [
+      "File I/O",
+      "Data transformation",
+      "Database basics",
+      "Scheduled jobs"
+    ],
+    "claude_code": "Python script + MCP server for data sources + cron scheduler",
+    "count": 1127,
+    "pct": 14.640166276955052,
+    "avg_nodes": 13.283052351375332
+  },
+  {
+    "name": "Social Media Automation",
+    "icon": "\ud83d\udcf1",
+    "question": "I post regularly on social platforms, always similar steps",
+    "desc": "Auto-post, monitor, or engage on social platforms with or without AI.",
+    "pattern": "trigger -> ai -> transform -> api",
+    "tools": [
+      "Schedule/Cron",
+      "Claude API",
+      "Text Formatter",
+      "Platform API"
+    ],
+    "apps": [
+      {
+        "name": "Telegram",
+        "cat": "deliver",
+        "count": 2504
+      },
+      {
+        "name": "OpenAI GPT-4",
+        "cat": "ai",
+        "count": 681
+      },
+      {
+        "name": "Google Sheets",
+        "cat": "data",
+        "count": 1091
+      },
+      {
+        "name": "Facebook/Instagram",
+        "cat": "api",
+        "count": 280
+      },
+      {
+        "name": "LinkedIn",
+        "cat": "api",
+        "count": 130
+      },
+      {
+        "name": "Twitter/X",
+        "cat": "api",
+        "count": 113
+      },
+      {
+        "name": "Reddit",
+        "cat": "api",
+        "count": 117
+      },
+      {
+        "name": "Discord",
+        "cat": "deliver",
+        "count": 160
+      }
+    ],
+    "code": "import anthropic, requests\n\n# 1. Generate post with Claude\nclient = anthropic.Anthropic()\npost = client.messages.create(\n    model=\"claude-sonnet-4-20250514\",\n    messages=[{\"role\": \"user\", \"content\": \"Write a LinkedIn post about AI automation trends. Professional tone, 150 words max.\"}],\n).content[0].text\n\n# 2. Post to platform (e.g., via API)\nrequests.post(\"https://api.linkedin.com/v2/posts\", json={\n    \"content\": post,\n}, headers={\"Authorization\": \"Bearer YOUR_TOKEN\"})",
+    "run": "crontab: 0 9 * * 2,4 python post_social.py",
+    "learn": [
+      "Claude for content generation",
+      "OAuth APIs",
+      "Prompt engineering",
+      "Rate limiting"
+    ],
+    "claude_code": "Claude agent for content + MCP servers for each platform",
+    "count": 1300,
+    "pct": 16.887503247596776,
+    "avg_nodes": 20.173076923076923
+  },
+  {
+    "name": "Email Automation",
+    "icon": "\ud83d\udce7",
+    "question": "I write the same emails over and over",
+    "desc": "Send, process, or route emails based on triggers and conditions.",
+    "pattern": "trigger -> transform -> deliver",
+    "tools": [
+      "Webhook/Form",
+      "Template Engine",
+      "SMTP / Gmail API"
+    ],
+    "apps": [
+      {
+        "name": "Gmail",
+        "cat": "deliver",
+        "count": 1426
+      },
+      {
+        "name": "Google Sheets",
+        "cat": "data",
+        "count": 1286
+      },
+      {
+        "name": "SMTP Email",
+        "cat": "deliver",
+        "count": 509
+      },
+      {
+        "name": "OpenAI GPT-4",
+        "cat": "ai",
+        "count": 649
+      },
+      {
+        "name": "Slack",
+        "cat": "deliver",
+        "count": 180
+      },
+      {
+        "name": "Outlook",
+        "cat": "deliver",
+        "count": 95
+      },
+      {
+        "name": "Airtable",
+        "cat": "data",
+        "count": 120
+      },
+      {
+        "name": "Webhook",
+        "cat": "trigger",
+        "count": 200
+      }
+    ],
+    "code": "from email.message import EmailMessage\nimport smtplib\n\ndef send_confirmation(name, email, event):\n    msg = EmailMessage()\n    msg[\"To\"] = email\n    msg[\"Subject\"] = f\"Confirmed: {event}\"\n    msg.set_content(f\"\"\"Hi {name},\n\nYou're confirmed for {event}. See you there!\n\"\"\")\n    with smtplib.SMTP_SSL(\"smtp.gmail.com\", 465) as s:\n        s.login(\"you@gmail.com\", \"app-password\")\n        s.send_message(msg)",
+    "run": "python email_handler.py  # triggered by webhook or form",
+    "learn": [
+      "SMTP basics",
+      "Email templating",
+      "Webhook handling",
+      "App passwords"
+    ],
+    "claude_code": "MCP server for email + trigger script + optional Claude for personalization",
+    "count": 1329,
+    "pct": 17.26422447388932,
+    "avg_nodes": 16.494356659142213
+  },
+  {
+    "name": "Document Processing",
+    "icon": "\ud83d\udcc4",
+    "question": "I read documents and extract information from them",
+    "desc": "Extract, transform, or analyze documents (PDF, images, files) with AI.",
+    "pattern": "trigger -> storage -> ai -> data",
+    "tools": [
+      "File Watcher",
+      "PDF/Doc Reader",
+      "Claude API",
+      "Spreadsheet/DB"
+    ],
+    "apps": [
+      {
+        "name": "Google Drive",
+        "cat": "storage",
+        "count": 1211
+      },
+      {
+        "name": "Google Sheets",
+        "cat": "data",
+        "count": 1053
+      },
+      {
+        "name": "OpenAI GPT-4",
+        "cat": "ai",
+        "count": 940
+      },
+      {
+        "name": "Telegram",
+        "cat": "deliver",
+        "count": 544
+      },
+      {
+        "name": "Google Docs",
+        "cat": "storage",
+        "count": 180
+      },
+      {
+        "name": "PDF Extract",
+        "cat": "transform",
+        "count": 547
+      },
+      {
+        "name": "Google Gemini",
+        "cat": "ai",
+        "count": 320
+      },
+      {
+        "name": "Slack",
+        "cat": "deliver",
+        "count": 150
+      }
+    ],
+    "code": "import anthropic\nfrom pathlib import Path\n\n# 1. Read document\npdf_text = extract_text_from_pdf(Path(\"invoice.pdf\"))\n\n# 2. Extract structured data with Claude\nclient = anthropic.Anthropic()\nresult = client.messages.create(\n    model=\"claude-sonnet-4-20250514\",\n    messages=[{\"role\": \"user\", \"content\": f\"\"\"Extract from this invoice:\n- Invoice number, date, total amount, vendor name\nReturn as JSON.\n\n{pdf_text}\"\"\"}],\n).content[0].text\n\n# 3. Save to spreadsheet or database\nsave_to_sheets(json.loads(result))",
+    "run": "python process_docs.py invoices/",
+    "learn": [
+      "PDF parsing",
+      "Claude for extraction",
+      "Structured outputs",
+      "File processing"
+    ],
+    "claude_code": "Claude agent with file tools + MCP server for storage",
+    "count": 1096,
+    "pct": 14.237464276435437,
+    "avg_nodes": 23.598540145985403
+  },
+  {
+    "name": "API Integration / Sync",
+    "icon": "\ud83d\udd17",
+    "question": "Two tools don't talk to each other",
+    "desc": "Connect external APIs, fetch data, and sync between services.",
+    "pattern": "trigger -> api -> transform -> data",
+    "tools": [
+      "Schedule/Webhook",
+      "HTTP Client",
+      "Data Mapper",
+      "Database/Sheets"
+    ],
+    "apps": [
+      {
+        "name": "Google Sheets",
+        "cat": "data",
+        "count": 1290
+      },
+      {
+        "name": "Airtable",
+        "cat": "data",
+        "count": 204
+      },
+      {
+        "name": "Notion",
+        "cat": "data",
+        "count": 95
+      },
+      {
+        "name": "Supabase",
+        "cat": "data",
+        "count": 80
+      },
+      {
+        "name": "PostgreSQL",
+        "cat": "data",
+        "count": 75
+      },
+      {
+        "name": "Slack",
+        "cat": "deliver",
+        "count": 85
+      },
+      {
+        "name": "Gmail",
+        "cat": "deliver",
+        "count": 110
+      },
+      {
+        "name": "Webhook",
+        "cat": "trigger",
+        "count": 163
+      }
+    ],
+    "code": "import requests, json\n\n# 1. Fetch from source API\nresponse = requests.get(\"https://api.source.com/items\",\n    headers={\"Authorization\": \"Bearer TOKEN_A\"})\nitems = response.json()[\"data\"]\n\n# 2. Transform to target format\nmapped = [{\"name\": i[\"title\"], \"status\": i[\"state\"]} for i in items]\n\n# 3. Push to destination API\nfor item in mapped:\n    requests.post(\"https://api.target.com/records\",\n        json=item, headers={\"Authorization\": \"Bearer TOKEN_B\"})",
+    "run": "crontab: */30 * * * * python sync_apis.py",
+    "learn": [
+      "REST APIs",
+      "Authentication",
+      "Data mapping",
+      "Error handling"
+    ],
+    "claude_code": "MCP server wrapping the API + Python transform script + data MCP server",
+    "count": 738,
+    "pct": 9.586905689789555,
+    "avg_nodes": 13.462059620596206
+  },
+  {
+    "name": "AI Data Analysis",
+    "icon": "\ud83d\udcca",
+    "question": "I look at data and draw the same kind of conclusions",
+    "desc": "Analyze data from databases or spreadsheets using AI for insights.",
+    "pattern": "trigger -> data -> ai -> deliver",
+    "tools": [
+      "Schedule/Cron",
+      "Database Query",
+      "Claude API",
+      "Report Delivery"
+    ],
+    "apps": [
+      {
+        "name": "Google Sheets",
+        "cat": "data",
+        "count": 1425
+      },
+      {
+        "name": "OpenAI GPT-4",
+        "cat": "ai",
+        "count": 509
+      },
+      {
+        "name": "Airtable",
+        "cat": "data",
+        "count": 397
+      },
+      {
+        "name": "Google Drive",
+        "cat": "storage",
+        "count": 324
+      },
+      {
+        "name": "PostgreSQL",
+        "cat": "data",
+        "count": 95
+      },
+      {
+        "name": "Supabase",
+        "cat": "data",
+        "count": 85
+      },
+      {
+        "name": "Google Gemini",
+        "cat": "ai",
+        "count": 180
+      },
+      {
+        "name": "Notion",
+        "cat": "data",
+        "count": 90
+      }
+    ],
+    "code": "import anthropic, sqlite3\n\n# 1. Query data\ndb = sqlite3.connect(\"sales.db\")\nrows = db.execute(\"\"\"\n    SELECT product, SUM(revenue), COUNT(*)\n    FROM sales WHERE date > date('now', '-7 days')\n    GROUP BY product ORDER BY SUM(revenue) DESC\n\"\"\").fetchall()\n\n# 2. Analyze with Claude\nclient = anthropic.Anthropic()\nanalysis = client.messages.create(\n    model=\"claude-sonnet-4-20250514\",\n    messages=[{\"role\": \"user\", \"content\": f\"Analyze this weekly sales data and highlight trends:\\n{rows}\"}],\n).content[0].text\n\n# 3. Send report\nsend_slack_message(\"#reports\", analysis)",
+    "run": "crontab: 0 8 * * 1 python weekly_analysis.py",
+    "learn": [
+      "SQL queries",
+      "Claude for analysis",
+      "Data visualization",
+      "Report delivery"
+    ],
+    "claude_code": "Claude agent + MCP server for data access + analysis skill",
+    "count": 734,
+    "pct": 9.534944141335412,
+    "avg_nodes": 18.88283378746594
+  },
+  {
+    "name": "Lead Gen / CRM",
+    "icon": "\ud83c\udfaf",
+    "question": "I manage contacts and leads manually",
+    "desc": "Capture, enrich, score, and route leads through a sales pipeline.",
+    "pattern": "trigger -> api -> ai -> data",
+    "tools": [
+      "Webhook",
+      "Enrichment API",
+      "Claude Scoring",
+      "CRM Database"
+    ],
+    "apps": [
+      {
+        "name": "Google Sheets",
+        "cat": "data",
+        "count": 560
+      },
+      {
+        "name": "HubSpot",
+        "cat": "data",
+        "count": 203
+      },
+      {
+        "name": "Gmail",
+        "cat": "deliver",
+        "count": 230
+      },
+      {
+        "name": "Airtable",
+        "cat": "data",
+        "count": 207
+      },
+      {
+        "name": "OpenAI GPT-4",
+        "cat": "ai",
+        "count": 205
+      },
+      {
+        "name": "Pipedrive",
+        "cat": "data",
+        "count": 84
+      },
+      {
+        "name": "Salesforce",
+        "cat": "data",
+        "count": 50
+      },
+      {
+        "name": "Slack",
+        "cat": "deliver",
+        "count": 85
+      }
+    ],
+    "code": "import anthropic, requests\n\ndef process_lead(lead):\n    # 1. Enrich with company data\n    company = requests.get(f\"https://api.clearbit.com/v2/companies/find?domain={lead['domain']}\").json()\n\n    # 2. Score with Claude\n    client = anthropic.Anthropic()\n    score = client.messages.create(\n        model=\"claude-sonnet-4-20250514\",\n        messages=[{\"role\": \"user\", \"content\": f\"Score this lead 1-10: {lead} Company: {company}\"}],\n    ).content[0].text\n\n    # 3. Save to CRM\n    save_to_crm({**lead, \"company\": company[\"name\"], \"score\": score})",
+    "run": "python lead_handler.py  # triggered by webhook",
+    "learn": [
+      "Enrichment APIs",
+      "AI scoring",
+      "CRM integration",
+      "Webhook handlers"
+    ],
+    "claude_code": "MCP server for CRM + Claude agent for scoring + webhook trigger",
+    "count": 536,
+    "pct": 6.962847492855287,
+    "avg_nodes": 16.145522388059703
+  },
+  {
+    "name": "Scheduled Notifications",
+    "icon": "\ud83d\udd14",
+    "question": "I keep forgetting to check things",
+    "desc": "Send alerts, reminders, or digests on a schedule \u2014 no AI needed.",
+    "pattern": "trigger -> api -> logic -> deliver",
+    "tools": [
+      "Cron Job",
+      "HTTP Request",
+      "Condition Check",
+      "Slack/Email"
+    ],
+    "apps": [
+      {
+        "name": "Google Sheets",
+        "cat": "data",
+        "count": 591
+      },
+      {
+        "name": "Gmail",
+        "cat": "deliver",
+        "count": 315
+      },
+      {
+        "name": "Slack",
+        "cat": "deliver",
+        "count": 271
+      },
+      {
+        "name": "Telegram",
+        "cat": "deliver",
+        "count": 196
+      },
+      {
+        "name": "SMTP Email",
+        "cat": "deliver",
+        "count": 177
+      },
+      {
+        "name": "Airtable",
+        "cat": "data",
+        "count": 80
+      },
+      {
+        "name": "Notion",
+        "cat": "data",
+        "count": 55
+      },
+      {
+        "name": "Discord",
+        "cat": "deliver",
+        "count": 45
+      }
+    ],
+    "code": "import requests\n\n# 1. Check something\nresponse = requests.get(\"https://api.example.com/status\")\ndata = response.json()\n\n# 2. Decide if notification needed\nif data[\"items_overdue\"] > 0:\n    # 3. Send alert\n    requests.post(\"https://hooks.slack.com/services/YOUR/WEBHOOK/URL\",\n        json={\"text\": f\"Alert: {data['items_overdue']} overdue items!\"})",
+    "run": "crontab: 0 9 * * * python check_and_notify.py",
+    "learn": [
+      "Cron basics",
+      "REST APIs",
+      "Conditional logic",
+      "Slack webhooks"
+    ],
+    "claude_code": "Cron job + Python script + MCP server for notifications",
+    "count": 591,
+    "pct": 7.677318784099767,
+    "avg_nodes": 12.71404399323181
+  },
+  {
+    "name": "RAG / Knowledge Base",
+    "icon": "\ud83e\udde0",
+    "question": "I'm always searching through my own documents",
+    "desc": "Build AI systems that retrieve and reason over your own documents.",
+    "pattern": "trigger -> storage -> ai -> data",
+    "tools": [
+      "Document Loader",
+      "Embeddings",
+      "Vector Store",
+      "Claude Agent"
+    ],
+    "apps": [
+      {
+        "name": "OpenAI Embeddings",
+        "cat": "ai",
+        "count": 428
+      },
+      {
+        "name": "Pinecone",
+        "cat": "storage",
+        "count": 208
+      },
+      {
+        "name": "OpenAI GPT-4",
+        "cat": "ai",
+        "count": 374
+      },
+      {
+        "name": "Google Drive",
+        "cat": "storage",
+        "count": 215
+      },
+      {
+        "name": "Qdrant",
+        "cat": "storage",
+        "count": 120
+      },
+      {
+        "name": "Supabase",
+        "cat": "data",
+        "count": 95
+      },
+      {
+        "name": "Google Gemini",
+        "cat": "ai",
+        "count": 80
+      },
+      {
+        "name": "PostgreSQL (pgvector)",
+        "cat": "data",
+        "count": 45
+      }
+    ],
+    "code": "# Ingest phase: run once\nfrom sentence_transformers import SentenceTransformer\nimport chromadb\n\nmodel = SentenceTransformer(\"all-MiniLM-L6-v2\")\ndb = chromadb.Client()\ncollection = db.create_collection(\"docs\")\n\nfor doc in load_documents(\"./docs/\"):\n    embedding = model.encode(doc.text)\n    collection.add(documents=[doc.text], embeddings=[embedding], ids=[doc.id])\n\n# Query phase: run per question\ndef ask(question):\n    results = collection.query(query_texts=[question], n_results=3)\n    context = \"\\n\".join(results[\"documents\"][0])\n    # Use Claude with retrieved context\n    return claude_answer(question, context)",
+    "run": "python ingest.py && python query.py 'What is our refund policy?'",
+    "learn": [
+      "Embeddings",
+      "Vector databases",
+      "RAG architecture",
+      "Claude with context"
+    ],
+    "claude_code": "Claude agent + vector store MCP server + document ingestion script",
+    "count": 333,
+    "pct": 4.325798908807482,
+    "avg_nodes": 26.32132132132132
+  },
+  {
+    "name": "Form / Webhook Handler",
+    "icon": "\ud83d\udce5",
+    "question": "When something arrives, I have to process it manually",
+    "desc": "React to incoming HTTP requests or form submissions with processing logic.",
+    "pattern": "trigger -> transform -> logic -> data",
+    "tools": [
+      "Webhook Server",
+      "Data Validator",
+      "Router",
+      "Database"
+    ],
+    "apps": [
+      {
+        "name": "Google Sheets",
+        "cat": "data",
+        "count": 553
+      },
+      {
+        "name": "Slack",
+        "cat": "deliver",
+        "count": 210
+      },
+      {
+        "name": "Gmail",
+        "cat": "deliver",
+        "count": 196
+      },
+      {
+        "name": "Airtable",
+        "cat": "data",
+        "count": 85
+      },
+      {
+        "name": "Notion",
+        "cat": "data",
+        "count": 70
+      },
+      {
+        "name": "Telegram",
+        "cat": "deliver",
+        "count": 65
+      },
+      {
+        "name": "PostgreSQL",
+        "cat": "data",
+        "count": 40
+      },
+      {
+        "name": "Discord",
+        "cat": "deliver",
+        "count": 35
+      }
+    ],
+    "code": "from http.server import HTTPServer, BaseHTTPRequestHandler\nimport json\n\nclass WebhookHandler(BaseHTTPRequestHandler):\n    def do_POST(self):\n        data = json.loads(self.rfile.read(int(self.headers[\"Content-Length\"])))\n\n        # Validate\n        if not data.get(\"email\") or not data.get(\"name\"):\n            self.send_response(400)\n            return\n\n        # Process and store\n        save_to_database(data)\n        self.send_response(200)\n\nHTTPServer((\"\", 8080), WebhookHandler).serve_forever()",
+    "run": "python webhook_server.py  # listens on port 8080",
+    "learn": [
+      "HTTP servers",
+      "JSON parsing",
+      "Data validation",
+      "Request handling"
+    ],
+    "claude_code": "Python webhook server + data validation script + MCP server for storage",
+    "count": 891,
+    "pct": 11.574434918160561,
+    "avg_nodes": 12.526374859708193
+  }
+];
+const stepColors = {
+  trigger:'#3fb950', ai:'#d2a8ff', transform:'#58a6ff',
+  deliver:'#f78166', data:'#56d4dd', api:'#e3b341',
+  logic:'#8b949e', storage:'#79c0ff'
+};
+
+function renderSteps(pattern) {
+  return pattern.split(' -> ').map(s => {
+    const c = stepColors[s] || '#8b949e';
+    const bg = c + '22';
+    return `<span class="step step-${s}">${s}</span>`;
+  }).join(' &#8594; ');
+}
+
+// Build wizard cards
+const cardsEl = document.getElementById('wizard-cards');
+wizardData.forEach((uc, i) => {
+  const card = document.createElement('div');
+  card.className = 'wizard-card';
+  card.onclick = () => wizardSelect(i);
+  card.innerHTML = `
+    <div class="wizard-card-icon">${uc.icon}</div>
+    <h4>${uc.name}</h4>
+    <p>"${uc.question}"</p>
+    <div class="wizard-card-count">${uc.count.toLocaleString()} workflows (${uc.pct.toFixed(0)}%)</div>
+  `;
+  cardsEl.appendChild(card);
+});
+
+function wizardSelect(index) {
+  const uc = wizardData[index];
+  document.getElementById('wiz-icon').textContent = uc.icon;
+  document.getElementById('wiz-name').textContent = uc.name;
+  document.getElementById('wiz-stats').textContent =
+    `${uc.count.toLocaleString()} real workflows · avg. ${uc.avg_nodes.toFixed(0)} nodes`;
+  document.getElementById('wiz-desc').textContent = uc.desc;
+  document.getElementById('wiz-pattern').innerHTML = renderSteps(uc.pattern);
+  document.getElementById('wiz-claude').textContent = uc.claude_code;
+  document.getElementById('wiz-run').textContent = uc.run;
+  document.getElementById('wiz-code').textContent = uc.code;
+
+  const toolsEl = document.getElementById('wiz-tools');
+  toolsEl.innerHTML = uc.tools.map(t => `<li>${t}</li>`).join('');
+
+  const appsEl = document.getElementById('wiz-apps');
+  appsEl.innerHTML = uc.apps.map(a =>
+    `<span class="wiz-app"><span class="step step-${a.cat}">${a.cat}</span>${a.name} <span class="wiz-app-count">${a.count.toLocaleString()}x</span></span>`
+  ).join('');
+
+  const learnEl = document.getElementById('wiz-learn');
+  learnEl.innerHTML = uc.learn.map(l => `<li>${l}</li>`).join('');
+
+  document.getElementById('wizard-step1').style.display = 'none';
+  document.getElementById('wizard-step2').style.display = 'block';
+}
+
+function wizardBack() {
+  document.getElementById('wizard-step1').style.display = 'block';
+  document.getElementById('wizard-step2').style.display = 'none';
+}
 </script>
 </body>
 </html>
