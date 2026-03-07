@@ -638,7 +638,6 @@ name = "workflow-patterns"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
-    { name = "httpx" },
     { name = "mcp", extra = ["cli"] },
 ]
 
@@ -649,10 +648,7 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [
-    { name = "httpx" },
-    { name = "mcp", extras = ["cli"] },
-]
+requires-dist = [{ name = "mcp", extras = ["cli"] }]
 
 [package.metadata.requires-dev]
 dev = [
