@@ -16,7 +16,7 @@ def parse_workflow(workflow_path: Path, metadata_path: Path | None = None) -> Wo
         workflow_path: Path to workflow.json
         metadata_path: Optional path to metadata.json
     """
-    with open(workflow_path) as f:
+    with open(workflow_path, encoding="utf-8") as f:
         data = json.load(f)
 
     # Parse nodes (skip sticky notes and noOps)
@@ -57,7 +57,7 @@ def parse_workflow(workflow_path: Path, metadata_path: Path | None = None) -> Wo
     categories = []
     source_url = ""
     if metadata_path and metadata_path.exists():
-        with open(metadata_path) as f:
+        with open(metadata_path, encoding="utf-8") as f:
             meta = json.load(f)
         author = meta.get("user_name", "")
         source_url = meta.get("url_n8n", "")
