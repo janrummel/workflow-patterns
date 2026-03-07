@@ -11,11 +11,7 @@ import json
 from pathlib import Path
 
 from workflow_patterns.parser.parse import parse_directory
-from workflow_patterns.patterns.analyzer import (
-    extract_common_pairs,
-    extract_node_stats,
-    extract_patterns,
-)
+from workflow_patterns.patterns.analyzer import extract_patterns
 
 PROJECT_ROOT = Path(__file__).parent.parent
 DATA_DIR = PROJECT_ROOT / "data" / "all_workflows"
@@ -230,30 +226,6 @@ def detect_use_cases(workflows):
     return results
 
 
-def classify_complexity(workflows):
-    """Group workflows by complexity tier."""
-    tiers = {
-        "Quick Automation": {"range": "2-3 nodes", "desc": "Simple one-step automations. Trigger something, do one action.", "wfs": []},
-        "Standard Workflow": {"range": "4-6 nodes", "desc": "Common business processes with a few steps and some logic.", "wfs": []},
-        "Medium Pipeline": {"range": "7-10 nodes", "desc": "Multi-step workflows with transforms, conditions, and integrations.", "wfs": []},
-        "Complex System": {"range": "11-20 nodes", "desc": "Sophisticated automations combining AI, multiple data sources, and branching logic.", "wfs": []},
-        "Enterprise Pipeline": {"range": "21+ nodes", "desc": "Large-scale workflows with many integrations, error handling, and parallel processing.", "wfs": []},
-    }
-    for wf in workflows:
-        n = len(wf.nodes)
-        if n <= 3:
-            tiers["Quick Automation"]["wfs"].append(wf)
-        elif n <= 6:
-            tiers["Standard Workflow"]["wfs"].append(wf)
-        elif n <= 10:
-            tiers["Medium Pipeline"]["wfs"].append(wf)
-        elif n <= 20:
-            tiers["Complex System"]["wfs"].append(wf)
-        else:
-            tiers["Enterprise Pipeline"]["wfs"].append(wf)
-    return tiers
-
-
 def get_building_blocks(workflows):
     """Extract the most used concrete tools/nodes."""
     from collections import Counter
@@ -298,7 +270,7 @@ def get_building_blocks(workflows):
     }
 
     blocks = []
-    for type_short, count in counter.most_common(30):
+    for type_short, count in counter.most_common(20):
         info = tool_info.get(type_short, (type_short, "other", ""))
         blocks.append({
             "id": type_short,
@@ -666,28 +638,15 @@ def main():
     print(f"  Parsed {len(workflows)} workflows")
 
     # Statistics
-    node_stats = extract_node_stats(workflows)
     patterns = extract_patterns(workflows, simplified=True)
-    pairs = extract_common_pairs(workflows)
     use_case_data = detect_use_cases(workflows)
-    complexity_tiers = classify_complexity(workflows)
     building_blocks = get_building_blocks(workflows)
-
-    # Prepare chart data
-    cat_labels = [c for c in node_stats if c != "skip"]
-    cat_values = [node_stats[c] for c in cat_labels]
-    top_patterns = patterns[:25]
 
     html = build_html(
         total_workflows=len(workflows),
         total_patterns=len(patterns),
-        total_nodes=sum(cat_values),
-        cat_labels=cat_labels,
-        cat_values=cat_values,
-        top_patterns=top_patterns,
-        pairs=pairs[:15],
+        top_patterns=patterns[:10],
         use_case_data=use_case_data,
-        complexity_tiers=complexity_tiers,
         building_blocks=building_blocks,
     )
 
@@ -697,9 +656,8 @@ def main():
 
 
 def build_html(
-    total_workflows, total_patterns, total_nodes,
-    cat_labels, cat_values, top_patterns, pairs,
-    use_case_data, complexity_tiers, building_blocks,
+    total_workflows, total_patterns,
+    top_patterns, use_case_data, building_blocks,
 ):
     # --- Wizard data (baked into HTML as JSON) ---
     wizard_items = []
@@ -726,75 +684,6 @@ def build_html(
         })
     wizard_json = json.dumps(wizard_items, indent=2)
 
-    # --- Use case cards ---
-    uc_cards = ""
-    for name, uc_meta in USE_CASES.items():
-        data = use_case_data[name]
-        if data["count"] == 0:
-            continue
-        tp_sig, tp_count = data["top_pattern"]
-        examples_html = ""
-        for wf in data["examples"]:
-            steps = " &rarr; ".join(
-                f'<span class="step step-{s.strip()}">{s.strip()}</span>'
-                for s in wf.simple_signature.split("->")
-            )
-            wf_name = wf.name[:60] + ("..." if len(wf.name) > 60 else "")
-            examples_html += f'<div class="uc-example"><div class="uc-example-name">{wf_name}</div><div class="uc-example-steps">{steps}</div></div>'
-
-        uc_cards += f"""
-        <div class="uc-card">
-            <div class="uc-header">
-                <span class="uc-icon">{uc_meta['icon']}</span>
-                <div>
-                    <h3>{name}</h3>
-                    <span class="uc-count">{data['count']:,} workflows ({data['pct']:.0f}%)</span>
-                </div>
-            </div>
-            <p class="uc-desc">{uc_meta['desc']}</p>
-            <div class="uc-detail-row">
-                <span class="uc-detail-chip">Pattern: <code>{tp_sig}</code> ({tp_count}x)</span>
-                <span class="uc-detail-chip">Avg: {data['avg_nodes']:.0f} nodes</span>
-            </div>
-            <div class="uc-examples-section">
-                {examples_html}
-            </div>
-        </div>"""
-
-    # --- Complexity tiers ---
-    tier_cards = ""
-    tier_labels = []
-    tier_values = []
-    for tier_name, tier_data in complexity_tiers.items():
-        count = len(tier_data["wfs"])
-        if count == 0:
-            continue
-        tier_labels.append(tier_name)
-        tier_values.append(count)
-        # Top 3 patterns for this tier
-        from collections import Counter
-        sig_counter = Counter(wf.simple_signature for wf in tier_data["wfs"])
-        top3 = sig_counter.most_common(3)
-        patterns_html = ""
-        for sig, cnt in top3:
-            steps = " &rarr; ".join(
-                f'<span class="step step-{s.strip()}">{s.strip()}</span>'
-                for s in sig.split("->")
-            )
-            patterns_html += f'<div class="tier-pattern">{steps} <span class="tier-count">{cnt}x</span></div>'
-
-        tier_cards += f"""
-        <div class="tier-card">
-            <div class="tier-header">
-                <h3>{tier_name}</h3>
-                <span class="tier-range">{tier_data['range']}</span>
-            </div>
-            <div class="tier-count-big">{count:,}</div>
-            <p class="tier-desc">{tier_data['desc']}</p>
-            <div class="tier-patterns-label">Top patterns:</div>
-            {patterns_html}
-        </div>"""
-
     # --- Building blocks ---
     blocks_html = ""
     for b in building_blocks:
@@ -807,19 +696,9 @@ def build_html(
             <td><div class="bar" style="width:{bar_width}px">{b['count']:,}</div></td>
         </tr>"""
 
-    # --- Connection table ---
-    conn_rows = ""
-    for src, tgt, count in pairs:
-        bar_width = min(count // 8, 250)
-        conn_rows += (
-            f'<tr><td><span class="step step-{src}">{src}</span></td>'
-            f'<td><span class="step step-{tgt}">{tgt}</span></td>'
-            f'<td><div class="bar" style="width:{bar_width}px">{count:,}</div></td></tr>'
-        )
-
-    # --- Top patterns with context ---
+    # --- Top patterns ---
     pattern_cards = ""
-    for p in top_patterns[:15]:
+    for p in top_patterns[:10]:
         steps_html = " &rarr; ".join(
             f'<span class="step step-{s.strip()}">{s.strip()}</span>'
             for s in p.signature.split("->")
@@ -835,17 +714,8 @@ def build_html(
         </div>"""
 
     # --- Chart data ---
-    cat_labels_j = json.dumps(cat_labels)
-    cat_values_j = json.dumps(cat_values)
     pat_labels_j = json.dumps([p.signature for p in top_patterns])
     pat_values_j = json.dumps([p.count for p in top_patterns])
-    tier_labels_j = json.dumps(tier_labels)
-    tier_values_j = json.dumps(tier_values)
-
-    # Use case chart data
-    uc_sorted = sorted(use_case_data.items(), key=lambda x: -x[1]["count"])
-    uc_labels_j = json.dumps([name for name, _ in uc_sorted])
-    uc_values_j = json.dumps([d["count"] for _, d in uc_sorted])
 
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -874,7 +744,7 @@ h1 {{ font-size:2.4rem; margin-bottom:0.3rem; }} h1 span {{ color:var(--accent);
 nav {{ display:flex; flex-wrap:wrap; gap:0.5rem; justify-content:center; margin:1.5rem 0; }}
 nav a {{ color:var(--accent); text-decoration:none; padding:6px 14px; border:1px solid var(--border); border-radius:16px; font-size:0.85rem; transition:all 0.2s; }}
 nav a:hover {{ background:var(--accent); color:var(--bg); }}
-.stats-grid {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1.2rem; margin:1.5rem 0 2.5rem; }}
+.stats-grid {{ display:grid; grid-template-columns:repeat(3,1fr); gap:1.2rem; margin:1.5rem 0 2.5rem; }}
 .stat-card {{ background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:1.2rem; text-align:center; }}
 .stat-number {{ font-size:2.2rem; font-weight:700; color:var(--accent); }}
 .stat-label {{ color:var(--text-muted); font-size:0.9rem; }}
@@ -882,46 +752,8 @@ section {{ background:var(--surface); border:1px solid var(--border); border-rad
 h2 {{ font-size:1.4rem; margin-bottom:0.3rem; padding-bottom:0.5rem; border-bottom:1px solid var(--border); }}
 .section-desc {{ color:var(--text-muted); margin-bottom:1.5rem; font-size:0.95rem; }}
 .chart-container {{ position:relative; height:350px; width:100%; }}
-.chart-container-tall {{ position:relative; height:550px; width:100%; }}
 
-/* Use case cards */
-.uc-grid {{ display:grid; grid-template-columns:repeat(auto-fill,minmax(520px,1fr)); gap:1.5rem; }}
-.uc-card {{ background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:1.5rem; }}
-.uc-header {{ display:flex; align-items:center; gap:0.8rem; margin-bottom:0.8rem; }}
-.uc-icon {{ font-size:1.8rem; }}
-.uc-header h3 {{ font-size:1.1rem; margin:0; }}
-.uc-count {{ color:var(--accent); font-size:0.85rem; font-weight:600; }}
-.uc-desc {{ color:var(--text-muted); margin-bottom:0.6rem; font-size:0.9rem; }}
-.uc-detail-row {{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:0.6rem; }}
-.uc-detail-chip {{ background:var(--surface2); padding:2px 10px; border-radius:10px; font-size:0.8rem; color:var(--text-muted); }}
-.uc-detail-chip code {{ font-size:0.75rem; }}
-.uc-detail-label {{ color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; font-weight:600; letter-spacing:0.5px; }}
-.uc-detail-value {{ font-size:0.9rem; }}
-.claude-approach {{ color:var(--purple); font-style:italic; }}
-.uc-examples-section {{ margin-top:0.8rem; }}
-.uc-example {{ background:var(--surface2); border-radius:4px; padding:0.5rem 0.8rem; margin:0.4rem 0; }}
-.uc-example-name {{ font-size:0.8rem; color:var(--text-muted); margin-bottom:0.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }}
-.uc-example-steps {{ font-size:0.85rem; }}
-
-/* Complexity tiers */
-.tier-grid {{ display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:1.2rem; }}
-.tier-card {{ background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:1.2rem; text-align:center; }}
-.tier-header h3 {{ font-size:1rem; margin:0; }}
-.tier-range {{ color:var(--text-muted); font-size:0.8rem; }}
-.tier-count-big {{ font-size:2rem; font-weight:700; color:var(--accent); margin:0.5rem 0; }}
-.tier-desc {{ color:var(--text-muted); font-size:0.85rem; margin-bottom:0.8rem; }}
-.tier-patterns-label {{ color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; font-weight:600; margin-bottom:0.4rem; }}
-.tier-pattern {{ margin:0.4rem 0; font-size:0.8rem; }}
-.tier-count {{ color:var(--text-muted); font-size:0.75rem; }}
-
-/* Building blocks table */
-table {{ width:100%; border-collapse:collapse; }}
-th,td {{ padding:0.5rem 0.8rem; text-align:left; border-bottom:1px solid var(--border); font-size:0.9rem; }}
-th {{ color:var(--text-muted); font-weight:600; font-size:0.8rem; text-transform:uppercase; }}
-.block-name {{ font-weight:600; }}
-.block-desc {{ color:var(--text-muted); font-size:0.85rem; }}
-
-/* Steps / badges */
+/* Steps / category badges */
 .step {{ display:inline-block; padding:1px 8px; border-radius:10px; font-size:0.8rem; font-weight:600; }}
 .step-trigger {{ background:#1f3a1f; color:#3fb950; }}
 .step-ai {{ background:#2d1f3a; color:#d2a8ff; }}
@@ -939,6 +771,13 @@ th {{ color:var(--text-muted); font-weight:600; font-size:0.8rem; text-transform
   font-size:0.75rem; padding:0 8px; display:flex; align-items:center; min-width:40px;
 }}
 
+/* Building blocks table */
+table {{ width:100%; border-collapse:collapse; }}
+th,td {{ padding:0.5rem 0.8rem; text-align:left; border-bottom:1px solid var(--border); font-size:0.9rem; }}
+th {{ color:var(--text-muted); font-weight:600; font-size:0.8rem; text-transform:uppercase; }}
+.block-name {{ font-weight:600; }}
+.block-desc {{ color:var(--text-muted); font-size:0.85rem; }}
+
 /* Pattern cards */
 .pattern-card {{ background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:0.8rem 1rem; margin:0.6rem 0; }}
 .pattern-sig {{ margin-bottom:0.4rem; }}
@@ -946,12 +785,6 @@ th {{ color:var(--text-muted); font-weight:600; font-size:0.8rem; text-transform
 .pattern-count {{ background:var(--accent); color:var(--bg); font-weight:700; padding:1px 8px; border-radius:8px; font-size:0.75rem; }}
 .pattern-examples {{ color:var(--text-muted); font-size:0.8rem; }}
 
-.two-col {{ display:grid; grid-template-columns:1fr 1fr; gap:2rem; }}
-@media (max-width:900px) {{
-  .two-col {{ grid-template-columns:1fr; }}
-  .uc-grid {{ grid-template-columns:1fr; }}
-  .tier-grid {{ grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); }}
-}}
 footer {{ text-align:center; color:var(--text-muted); padding:2rem 0; font-size:0.85rem; border-top:1px solid var(--border); margin-top:2rem; }}
 footer a {{ color:var(--accent); text-decoration:none; }}
 code {{ background:var(--surface2); padding:2px 6px; border-radius:4px; font-size:0.85rem; }}
@@ -974,40 +807,52 @@ code {{ background:var(--surface2); padding:2px 6px; border-radius:4px; font-siz
   font-size:0.9rem; transition:all 0.2s;
 }}
 .wizard-back:hover {{ background:var(--accent); color:var(--bg); }}
-.wizard-result-header {{ display:flex; align-items:center; gap:0.8rem; margin-bottom:1rem; }}
+/* Wizard result — card grid */
+.wizard-result-header {{ display:flex; align-items:center; gap:0.8rem; margin-bottom:1.2rem; }}
 .wizard-result-header h3 {{ margin:0; font-size:1.3rem; }}
-.wiz-row {{ display:flex; gap:1.5rem; margin-top:0.5rem; flex-wrap:wrap; }}
-.wiz-col-third {{ flex:1; min-width:200px; }}
-.wizard-col {{ min-width:0; }}
+.uc-icon {{ font-size:1.8rem; }}
+.uc-count {{ color:var(--accent); font-size:0.85rem; font-weight:600; }}
+.uc-desc {{ color:var(--text-muted); margin-bottom:1.2rem; font-size:0.9rem; }}
+.wiz-grid {{ display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem; }}
+.wiz-card {{ background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:1.2rem; }}
+.wiz-card-full {{ grid-column:1/-1; }}
+.wiz-card-title {{ color:var(--text-muted); font-size:0.7rem; text-transform:uppercase; font-weight:700; letter-spacing:0.8px; margin-bottom:0.6rem; }}
+.wiz-card-title:not(:first-child) {{ margin-top:1.2rem; }}
+.wiz-pattern-display {{ font-size:1.05rem; padding:0.3rem 0; }}
+.wiz-tools-list {{ list-style:none; padding:0; }}
+.wiz-tools-list li {{ padding:2px 0; font-size:0.9rem; }}
+.wiz-tools-list li::before {{ content:"\\2022 "; color:var(--accent); font-weight:bold; }}
+.wiz-learn-list {{ list-style:none; padding:0; }}
+.wiz-learn-list li {{ padding:2px 0; font-size:0.85rem; color:var(--text-muted); }}
+.wiz-learn-list li::before {{ content:"\\2713 "; color:var(--green); }}
+.claude-approach {{ color:var(--purple); font-style:italic; font-size:0.9rem; }}
+.wiz-run {{ display:block; padding:8px 12px; margin-top:4px; font-size:0.85rem; word-break:break-all; }}
 .copy-btn {{
   background:var(--accent); color:var(--bg); border:none; border-radius:4px;
   padding:2px 10px; font-size:0.7rem; font-weight:600; cursor:pointer;
   margin-left:8px; vertical-align:middle;
 }}
 .copy-btn:hover {{ opacity:0.8; }}
-.wiz-label {{ color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; font-weight:600; letter-spacing:0.5px; margin:1rem 0 0.3rem; }}
-.wiz-label:first-child {{ margin-top:0; }}
-.wiz-pattern-display {{ font-size:1.1rem; padding:0.5rem 0; }}
-.wiz-tools-list, .wiz-learn-list {{ list-style:none; padding:0; }}
-.wiz-tools-list li {{ padding:3px 0; font-size:0.9rem; }}
-.wiz-tools-list li::before {{ content:"\\2022 "; color:var(--accent); font-weight:bold; }}
-.wiz-learn-list li {{ padding:2px 0; font-size:0.85rem; color:var(--text-muted); }}
-.wiz-learn-list li::before {{ content:"\\2713 "; color:var(--green); }}
-.wiz-run {{ display:block; padding:8px 12px; margin-top:4px; font-size:0.85rem; word-break:break-all; }}
-.wiz-apps {{ display:flex; flex-wrap:wrap; gap:6px; margin-top:4px; }}
-.wiz-app {{
-  display:inline-flex; align-items:center; gap:5px;
-  background:var(--bg); border:1px solid var(--border); border-radius:14px;
-  padding:3px 10px; font-size:0.8rem;
-}}
+/* Apps grouped by category */
+.wiz-app-group {{ display:flex; align-items:baseline; gap:0.6rem; padding:0.4rem 0; border-bottom:1px solid var(--border); }}
+.wiz-app-group:last-child {{ border-bottom:none; }}
+.wiz-app-group-label {{ min-width:80px; flex-shrink:0; }}
+.wiz-app-group-items {{ display:flex; flex-wrap:wrap; gap:6px; }}
+.wiz-app-item {{ font-size:0.85rem; padding:2px 0; }}
+.wiz-app-item::after {{ content:" · "; color:var(--border); }}
+.wiz-app-item:last-child::after {{ content:""; }}
 .wiz-app-count {{ color:var(--text-muted); font-size:0.7rem; }}
 .wiz-code {{
   background:#1e1e2e !important; border:1px solid var(--border); border-radius:6px;
   padding:1rem; font-size:0.8rem; line-height:1.5; overflow-x:auto;
   white-space:pre; font-family:'SF Mono',SFMono-Regular,Consolas,monospace;
-  max-height:500px; overflow-y:auto; margin-top:4px;
+  max-height:400px; overflow-y:auto; margin-top:4px;
 }}
 .wiz-code code {{ background:transparent !important; font-size:0.8rem; }}
+@media (max-width:700px) {{ .wiz-grid {{ grid-template-columns:1fr; }} }}
+@media (max-width:900px) {{
+  .stats-grid {{ grid-template-columns:1fr; }}
+}}
 </style>
 </head>
 <body>
@@ -1016,26 +861,23 @@ code {{ background:var(--surface2); padding:2px 6px; border-radius:4px; font-siz
 <header>
   <h1>Workflow <span>Patterns</span></h1>
   <p class="subtitle">
-    What do {total_workflows:,} real-world automation workflows have in common?
-    This analysis extracts the universal patterns behind them — the building blocks,
-    use cases, and architectures that power everyday automation.
+    We analyzed {total_workflows:,} real n8n automation workflows and mapped every node
+    to an abstract category (trigger, AI, transform, deliver, &hellip;). The result:
+    universal patterns that show how people actually build automations &mdash;
+    and how you can build yours.
   </p>
 </header>
 
 <nav>
   <a href="#wizard">Build a Workflow</a>
-  <a href="#use-cases">Use Cases</a>
-  <a href="#complexity">Complexity</a>
-  <a href="#building-blocks">Building Blocks</a>
-  <a href="#categories">Categories</a>
-  <a href="#patterns">Top Patterns</a>
-  <a href="#connections">Connections</a>
+  <a href="#patterns">Patterns</a>
+  <a href="#building-blocks">Tools</a>
 </nav>
 
 <!-- WIZARD -->
 <section id="wizard" class="wizard-section">
-  <h2>Build Your Workflow</h2>
-  <p class="section-desc">Pick what you want to automate. Get the pattern, the tools, and a code starter — based on {total_workflows:,} real workflows.</p>
+  <h2>What Do You Want to Automate?</h2>
+  <p class="section-desc">Pick a use case below. Get the pattern, the tools, and starter code &mdash; all based on {total_workflows:,} real workflows.</p>
 
   <div id="wizard-step1">
     <div class="wizard-grid" id="wizard-cards"></div>
@@ -1053,34 +895,28 @@ code {{ background:var(--surface2); padding:2px 6px; border-radius:4px; font-siz
       </div>
       <p id="wiz-desc" class="uc-desc"></p>
 
-      <div class="wiz-row">
-        <div class="wiz-col-third">
-          <div class="wiz-label">Pattern</div>
+      <div class="wiz-grid">
+        <div class="wiz-card">
+          <div class="wiz-card-title">Pattern</div>
           <div id="wiz-pattern" class="wiz-pattern-display"></div>
-        </div>
-        <div class="wiz-col-third">
-          <div class="wiz-label">Building blocks</div>
+          <div class="wiz-card-title">Building Blocks</div>
           <ul id="wiz-tools" class="wiz-tools-list"></ul>
         </div>
-        <div class="wiz-col-third">
-          <div class="wiz-label">Claude Code approach</div>
+        <div class="wiz-card">
+          <div class="wiz-card-title">Claude Code Architecture</div>
           <p id="wiz-claude" class="claude-approach"></p>
-          <div class="wiz-label" style="margin-top:0.8rem;">How to run it</div>
+          <div class="wiz-card-title">Run It</div>
           <code id="wiz-run" class="wiz-run"></code>
-        </div>
-      </div>
-
-      <div class="wiz-label">Popular apps &amp; services used in real workflows</div>
-      <div id="wiz-apps" class="wiz-apps"></div>
-
-      <div class="wiz-row" style="margin-top:1.2rem;">
-        <div class="wizard-col" style="flex:2;min-width:0;">
-          <div class="wiz-label">Starter code <button class="copy-btn" onclick="copyCode()">Copy</button></div>
-          <pre id="wiz-code" class="wiz-code"><code id="wiz-code-inner" class="language-python"></code></pre>
-        </div>
-        <div class="wizard-col" style="flex:1;min-width:200px;">
-          <div class="wiz-label">What you'll learn</div>
+          <div class="wiz-card-title">What You'll Learn</div>
           <ul id="wiz-learn" class="wiz-learn-list"></ul>
+        </div>
+        <div class="wiz-card wiz-card-full">
+          <div class="wiz-card-title">Tools &amp; Services by Category</div>
+          <div id="wiz-apps"></div>
+        </div>
+        <div class="wiz-card wiz-card-full">
+          <div class="wiz-card-title">Starter Code <button class="copy-btn" onclick="copyCode()">Copy</button></div>
+          <pre id="wiz-code" class="wiz-code"><code id="wiz-code-inner" class="language-python"></code></pre>
         </div>
       </div>
     </div>
@@ -1089,92 +925,41 @@ code {{ background:var(--surface2); padding:2px 6px; border-radius:4px; font-siz
 
 <div class="stats-grid">
   <div class="stat-card"><div class="stat-number">{total_workflows:,}</div><div class="stat-label">Workflows Analyzed</div></div>
-  <div class="stat-card"><div class="stat-number">{total_nodes:,}</div><div class="stat-label">Total Nodes</div></div>
-  <div class="stat-card"><div class="stat-number">{total_patterns:,}</div><div class="stat-label">Unique Patterns</div></div>
-  <div class="stat-card"><div class="stat-number">{len(cat_labels)}</div><div class="stat-label">Categories</div></div>
-  <div class="stat-card"><div class="stat-number">12</div><div class="stat-label">Use Case Clusters</div></div>
+  <div class="stat-card"><div class="stat-number">{total_patterns:,}</div><div class="stat-label">Unique Patterns Found</div></div>
+  <div class="stat-card"><div class="stat-number">12</div><div class="stat-label">Use Case Categories</div></div>
 </div>
 
-<!-- USE CASES -->
-<section id="use-cases">
-  <h2>What People Automate</h2>
-  <p class="section-desc">
-    Every workflow solves a real problem. We clustered {total_workflows:,} workflows into 12 use case
-    families — from simple notification bots to complex AI pipelines.
-    Each card shows how often this pattern appears, what it looks like, and how
-    you could build it with Claude Code.
-  </p>
-  <div class="chart-container" style="margin-bottom:2rem;">
-    <canvas id="ucChart"></canvas>
-  </div>
-  <div class="uc-grid">
-    {uc_cards}
-  </div>
-</section>
-
-<!-- COMPLEXITY -->
-<section id="complexity">
-  <h2>How Complex Are Real Workflows?</h2>
-  <p class="section-desc">
-    Not every automation needs 20 steps. Most real-world workflows range from
-    4 to 20 nodes. Here's how they distribute — and the top patterns at each tier.
-  </p>
-  <div class="chart-container" style="margin-bottom:2rem;">
-    <canvas id="tierChart"></canvas>
-  </div>
-  <div class="tier-grid">
-    {tier_cards}
-  </div>
-</section>
-
-<!-- BUILDING BLOCKS -->
-<section id="building-blocks">
-  <h2>The 30 Most-Used Building Blocks</h2>
-  <p class="section-desc">
-    These are the concrete tools that appear most often across all workflows.
-    Each one maps to an abstract category (trigger, ai, transform, etc.).
-  </p>
-  <table>
-    <thead><tr><th>Tool</th><th>Category</th><th>What it does</th><th>Usage</th></tr></thead>
-    <tbody>{blocks_html}</tbody>
-  </table>
-</section>
-
-<!-- CATEGORIES -->
-<section id="categories">
-  <h2>Abstract Categories</h2>
-  <p class="section-desc">
-    Every node type is mapped to one of {len(cat_labels)} abstract categories.
-    This abstraction reveals the universal patterns behind different tool choices.
-  </p>
-  <div class="chart-container">
-    <canvas id="catChart"></canvas>
-  </div>
-</section>
-
-<!-- TOP PATTERNS -->
+<!-- PATTERNS -->
 <section id="patterns">
-  <h2>Top 15 Workflow Architectures</h2>
+  <h2>Most Common Patterns</h2>
   <p class="section-desc">
-    The most recurring sequences of categories — the "DNA" of automation.
-    Read left to right: each step shows what kind of action happens at that point.
+    A "pattern" is the sequence of abstract steps a workflow follows, like
+    <span class="step step-trigger">trigger</span> &rarr;
+    <span class="step step-ai">ai</span> &rarr;
+    <span class="step step-deliver">deliver</span>.
+    The specific tool doesn't matter &mdash; what matters is the structure.
+    These are the 10 most frequent patterns across all {total_workflows:,} workflows.
   </p>
-  <div class="chart-container-tall" style="margin-bottom:1.5rem;">
+  <div class="chart-container" style="margin-bottom:1.5rem;">
     <canvas id="patChart"></canvas>
   </div>
   {pattern_cards}
 </section>
 
-<!-- CONNECTIONS -->
-<section id="connections">
-  <h2>How Categories Connect</h2>
+<!-- BUILDING BLOCKS -->
+<section id="building-blocks">
+  <h2>Most-Used Tools</h2>
   <p class="section-desc">
-    Which categories feed into which? This shows the most frequent
-    category-to-category edges across all workflows.
+    The concrete tools and services that appear most often across all workflows.
+    Each tool belongs to a category like
+    <span class="step step-ai">ai</span>,
+    <span class="step step-trigger">trigger</span>, or
+    <span class="step step-deliver">deliver</span> &mdash;
+    together they form the building blocks of any automation.
   </p>
   <table>
-    <thead><tr><th>From</th><th>To</th><th>Frequency</th></tr></thead>
-    <tbody>{conn_rows}</tbody>
+    <thead><tr><th>Tool</th><th>Category</th><th>What it does</th><th>Usage</th></tr></thead>
+    <tbody>{blocks_html}</tbody>
   </table>
 </section>
 
@@ -1189,63 +974,7 @@ code {{ background:var(--surface2); padding:2px 6px; border-radius:4px; font-siz
 </div>
 
 <script>
-const catColors = {{
-  trigger:'#3fb950', ai:'#d2a8ff', transform:'#58a6ff',
-  deliver:'#f78166', data:'#56d4dd', api:'#e3b341',
-  logic:'#8b949e', storage:'#79c0ff', other:'#484f58'
-}};
-
-// Use case chart
-new Chart(document.getElementById('ucChart'), {{
-  type:'bar',
-  data:{{
-    labels:{uc_labels_j},
-    datasets:[{{ data:{uc_values_j}, backgroundColor:'#58a6ff', borderRadius:4 }}]
-  }},
-  options:{{
-    indexAxis:'y', responsive:true, maintainAspectRatio:false,
-    plugins:{{ legend:{{display:false}}, tooltip:{{ callbacks:{{ label:c=>c.parsed.x.toLocaleString()+' workflows' }} }} }},
-    scales:{{
-      x:{{ ticks:{{color:'#8b949e'}}, grid:{{color:'#30363d'}} }},
-      y:{{ ticks:{{color:'#e6edf3',font:{{size:12}}}}, grid:{{display:false}} }}
-    }}
-  }}
-}});
-
-// Complexity tier chart
-new Chart(document.getElementById('tierChart'), {{
-  type:'doughnut',
-  data:{{
-    labels:{tier_labels_j},
-    datasets:[{{ data:{tier_values_j}, backgroundColor:['#3fb950','#58a6ff','#e3b341','#f78166','#d2a8ff'], borderWidth:0 }}]
-  }},
-  options:{{
-    responsive:true, maintainAspectRatio:false,
-    plugins:{{
-      legend:{{ position:'right', labels:{{color:'#e6edf3',padding:16,font:{{size:13}}}} }},
-      tooltip:{{ callbacks:{{ label:c=>c.label+': '+c.parsed.toLocaleString()+' workflows' }} }}
-    }}
-  }}
-}});
-
-// Category chart
-new Chart(document.getElementById('catChart'), {{
-  type:'bar',
-  data:{{
-    labels:{cat_labels_j},
-    datasets:[{{ data:{cat_values_j}, backgroundColor:{cat_labels_j}.map(l=>catColors[l]||'#484f58'), borderRadius:4 }}]
-  }},
-  options:{{
-    indexAxis:'y', responsive:true, maintainAspectRatio:false,
-    plugins:{{ legend:{{display:false}}, tooltip:{{ callbacks:{{ label:c=>c.parsed.x.toLocaleString()+' nodes' }} }} }},
-    scales:{{
-      x:{{ ticks:{{color:'#8b949e',callback:v=>v.toLocaleString()}}, grid:{{color:'#30363d'}} }},
-      y:{{ ticks:{{color:'#e6edf3',font:{{size:14,weight:'bold'}}}}, grid:{{display:false}} }}
-    }}
-  }}
-}});
-
-// Pattern chart
+// --- Pattern chart ---
 new Chart(document.getElementById('patChart'), {{
   type:'bar',
   data:{{
@@ -1264,16 +993,9 @@ new Chart(document.getElementById('patChart'), {{
 
 // --- Wizard ---
 const wizardData = {wizard_json};
-const stepColors = {{
-  trigger:'#3fb950', ai:'#d2a8ff', transform:'#58a6ff',
-  deliver:'#f78166', data:'#56d4dd', api:'#e3b341',
-  logic:'#8b949e', storage:'#79c0ff'
-}};
 
 function renderSteps(pattern) {{
   return pattern.split(' -> ').map(s => {{
-    const c = stepColors[s] || '#8b949e';
-    const bg = c + '22';
     return `<span class="step step-${{s}}">${{s}}</span>`;
   }}).join(' &#8594; ');
 }}
@@ -1310,10 +1032,22 @@ function wizardSelect(index) {{
   const toolsEl = document.getElementById('wiz-tools');
   toolsEl.innerHTML = uc.tools.map(t => `<li>${{t}}</li>`).join('');
 
+  // Group apps by category
+  const groups = {{}};
+  const catOrder = ['ai','data','deliver','storage','api','trigger','transform','logic'];
+  uc.apps.forEach(a => {{
+    if (!groups[a.cat]) groups[a.cat] = [];
+    groups[a.cat].push(a);
+  }});
   const appsEl = document.getElementById('wiz-apps');
-  appsEl.innerHTML = uc.apps.map(a =>
-    `<span class="wiz-app"><span class="step step-${{a.cat}}">${{a.cat}}</span>${{a.name}} <span class="wiz-app-count">${{a.count.toLocaleString()}}x</span></span>`
-  ).join('');
+  appsEl.innerHTML = catOrder
+    .filter(cat => groups[cat])
+    .map(cat => `<div class="wiz-app-group">
+      <span class="wiz-app-group-label"><span class="step step-${{cat}}">${{cat}}</span></span>
+      <div class="wiz-app-group-items">
+        ${{groups[cat].map(a => `<span class="wiz-app-item">${{a.name}} <span class="wiz-app-count">${{a.count.toLocaleString()}}x</span></span>`).join('')}}
+      </div>
+    </div>`).join('');
 
   const learnEl = document.getElementById('wiz-learn');
   learnEl.innerHTML = uc.learn.map(l => `<li>${{l}}</li>`).join('');
