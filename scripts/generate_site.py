@@ -310,6 +310,356 @@ def get_building_blocks(workflows):
     return blocks
 
 
+WIZARD_DATA = {
+    "AI Chatbot / Assistant": {
+        "question": "People keep asking me the same questions",
+        "pattern": "trigger -> ai -> data -> deliver",
+        "tools": ["Chat Trigger", "Claude Agent", "Memory Buffer", "Data Source (MCP)"],
+        "apps": [
+            ("OpenAI GPT-4", "ai", 2854), ("Google Gemini", "ai", 1068),
+            ("Google Sheets", "data", 2105), ("Telegram", "deliver", 1279),
+            ("Gmail", "deliver", 1008), ("Slack", "deliver", 490),
+            ("Pinecone", "storage", 208), ("Supabase", "data", 180),
+        ],
+        "code": """from anthropic import Anthropic
+
+client = Anthropic()
+conversation = []
+
+def chat(user_message):
+    conversation.append({"role": "user", "content": user_message})
+    response = client.messages.create(
+        model="claude-sonnet-4-20250514",
+        system="You are a helpful assistant. Answer based on the knowledge base.",
+        messages=conversation,
+    )
+    reply = response.content[0].text
+    conversation.append({"role": "assistant", "content": reply})
+    return reply""",
+        "run": "python chatbot.py  # or expose as MCP server",
+        "learn": ["Claude API basics", "Conversation memory", "System prompts", "MCP tool design"],
+    },
+    "AI Content Creation": {
+        "question": "I regularly write similar content (newsletters, posts, summaries)",
+        "pattern": "trigger -> api -> ai -> deliver",
+        "tools": ["Schedule/Cron", "HTTP Request", "Claude API", "Email/Slack"],
+        "apps": [
+            ("OpenAI GPT-4", "ai", 1632), ("Telegram", "deliver", 1712),
+            ("Gmail", "deliver", 1686), ("Google Sheets", "data", 1848),
+            ("WordPress", "api", 220), ("Slack", "deliver", 380),
+            ("Discord", "deliver", 150), ("OpenRouter", "ai", 350),
+        ],
+        "code": """import anthropic, requests, smtplib
+from email.message import EmailMessage
+
+# 1. Fetch content
+articles = requests.get("https://api.example.com/articles?days=7").json()
+
+# 2. Summarize with Claude
+client = anthropic.Anthropic()
+summary = client.messages.create(
+    model="claude-sonnet-4-20250514",
+    messages=[{"role": "user", "content": f"Summarize these articles:\\n{articles}"}],
+).content[0].text
+
+# 3. Send digest
+msg = EmailMessage()
+msg["Subject"] = "Your Weekly Digest"
+msg.set_content(summary)
+# ... send via SMTP""",
+        "run": "crontab: 0 7 * * 1 python weekly_digest.py",
+        "learn": ["REST API calls", "Claude for summarization", "Email automation", "Cron scheduling"],
+    },
+    "Data Pipeline / ETL": {
+        "question": "I copy data from A to B, always the same way",
+        "pattern": "trigger -> data -> transform -> data",
+        "tools": ["Schedule/Cron", "Database/Sheets Reader", "Python Transform", "Database Writer"],
+        "apps": [
+            ("Google Sheets", "data", 1965), ("Airtable", "data", 302),
+            ("Gmail", "deliver", 348), ("PostgreSQL", "data", 120),
+            ("MySQL", "data", 85), ("Notion", "data", 110),
+            ("Supabase", "data", 95), ("MongoDB", "data", 45),
+        ],
+        "code": """import csv, sqlite3
+
+# 1. Read source (CSV, API, database...)
+with open("input.csv") as f:
+    rows = list(csv.DictReader(f))
+
+# 2. Transform
+cleaned = [
+    {"name": r["name"].strip(), "value": float(r["amount"])}
+    for r in rows if r["amount"]
+]
+
+# 3. Write to destination
+db = sqlite3.connect("output.db")
+db.executemany("INSERT INTO records (name, value) VALUES (?, ?)",
+    [(r["name"], r["value"]) for r in cleaned])
+db.commit()""",
+        "run": "crontab: 0 * * * * python sync_data.py",
+        "learn": ["File I/O", "Data transformation", "Database basics", "Scheduled jobs"],
+    },
+    "Social Media Automation": {
+        "question": "I post regularly on social platforms, always similar steps",
+        "pattern": "trigger -> ai -> transform -> api",
+        "tools": ["Schedule/Cron", "Claude API", "Text Formatter", "Platform API"],
+        "apps": [
+            ("Telegram", "deliver", 2504), ("OpenAI GPT-4", "ai", 681),
+            ("Google Sheets", "data", 1091), ("Facebook/Instagram", "api", 280),
+            ("LinkedIn", "api", 130), ("Twitter/X", "api", 113),
+            ("Reddit", "api", 117), ("Discord", "deliver", 160),
+        ],
+        "code": """import anthropic, requests
+
+# 1. Generate post with Claude
+client = anthropic.Anthropic()
+post = client.messages.create(
+    model="claude-sonnet-4-20250514",
+    messages=[{"role": "user", "content": "Write a LinkedIn post about AI automation trends. Professional tone, 150 words max."}],
+).content[0].text
+
+# 2. Post to platform (e.g., via API)
+requests.post("https://api.linkedin.com/v2/posts", json={
+    "content": post,
+}, headers={"Authorization": "Bearer YOUR_TOKEN"})""",
+        "run": "crontab: 0 9 * * 2,4 python post_social.py",
+        "learn": ["Claude for content generation", "OAuth APIs", "Prompt engineering", "Rate limiting"],
+    },
+    "Email Automation": {
+        "question": "I write the same emails over and over",
+        "pattern": "trigger -> transform -> deliver",
+        "tools": ["Webhook/Form", "Template Engine", "SMTP / Gmail API"],
+        "apps": [
+            ("Gmail", "deliver", 1426), ("Google Sheets", "data", 1286),
+            ("SMTP Email", "deliver", 509), ("OpenAI GPT-4", "ai", 649),
+            ("Slack", "deliver", 180), ("Outlook", "deliver", 95),
+            ("Airtable", "data", 120), ("Webhook", "trigger", 200),
+        ],
+        "code": """from email.message import EmailMessage
+import smtplib
+
+def send_confirmation(name, email, event):
+    msg = EmailMessage()
+    msg["To"] = email
+    msg["Subject"] = f"Confirmed: {event}"
+    msg.set_content(f\"\"\"Hi {name},
+
+You're confirmed for {event}. See you there!
+\"\"\")
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as s:
+        s.login("you@gmail.com", "app-password")
+        s.send_message(msg)""",
+        "run": "python email_handler.py  # triggered by webhook or form",
+        "learn": ["SMTP basics", "Email templating", "Webhook handling", "App passwords"],
+    },
+    "Document Processing": {
+        "question": "I read documents and extract information from them",
+        "pattern": "trigger -> storage -> ai -> data",
+        "tools": ["File Watcher", "PDF/Doc Reader", "Claude API", "Spreadsheet/DB"],
+        "apps": [
+            ("Google Drive", "storage", 1211), ("Google Sheets", "data", 1053),
+            ("OpenAI GPT-4", "ai", 940), ("Telegram", "deliver", 544),
+            ("Google Docs", "storage", 180), ("PDF Extract", "transform", 547),
+            ("Google Gemini", "ai", 320), ("Slack", "deliver", 150),
+        ],
+        "code": """import anthropic
+from pathlib import Path
+
+# 1. Read document
+pdf_text = extract_text_from_pdf(Path("invoice.pdf"))
+
+# 2. Extract structured data with Claude
+client = anthropic.Anthropic()
+result = client.messages.create(
+    model="claude-sonnet-4-20250514",
+    messages=[{"role": "user", "content": f\"\"\"Extract from this invoice:
+- Invoice number, date, total amount, vendor name
+Return as JSON.
+
+{pdf_text}\"\"\"}],
+).content[0].text
+
+# 3. Save to spreadsheet or database
+save_to_sheets(json.loads(result))""",
+        "run": "python process_docs.py invoices/",
+        "learn": ["PDF parsing", "Claude for extraction", "Structured outputs", "File processing"],
+    },
+    "API Integration / Sync": {
+        "question": "Two tools don't talk to each other",
+        "pattern": "trigger -> api -> transform -> data",
+        "tools": ["Schedule/Webhook", "HTTP Client", "Data Mapper", "Database/Sheets"],
+        "apps": [
+            ("Google Sheets", "data", 1290), ("Airtable", "data", 204),
+            ("Notion", "data", 95), ("Supabase", "data", 80),
+            ("PostgreSQL", "data", 75), ("Slack", "deliver", 85),
+            ("Gmail", "deliver", 110), ("Webhook", "trigger", 163),
+        ],
+        "code": """import requests, json
+
+# 1. Fetch from source API
+response = requests.get("https://api.source.com/items",
+    headers={"Authorization": "Bearer TOKEN_A"})
+items = response.json()["data"]
+
+# 2. Transform to target format
+mapped = [{"name": i["title"], "status": i["state"]} for i in items]
+
+# 3. Push to destination API
+for item in mapped:
+    requests.post("https://api.target.com/records",
+        json=item, headers={"Authorization": "Bearer TOKEN_B"})""",
+        "run": "crontab: */30 * * * * python sync_apis.py",
+        "learn": ["REST APIs", "Authentication", "Data mapping", "Error handling"],
+    },
+    "AI Data Analysis": {
+        "question": "I look at data and draw the same kind of conclusions",
+        "pattern": "trigger -> data -> ai -> deliver",
+        "tools": ["Schedule/Cron", "Database Query", "Claude API", "Report Delivery"],
+        "apps": [
+            ("Google Sheets", "data", 1425), ("OpenAI GPT-4", "ai", 509),
+            ("Airtable", "data", 397), ("Google Drive", "storage", 324),
+            ("PostgreSQL", "data", 95), ("Supabase", "data", 85),
+            ("Google Gemini", "ai", 180), ("Notion", "data", 90),
+        ],
+        "code": """import anthropic, sqlite3
+
+# 1. Query data
+db = sqlite3.connect("sales.db")
+rows = db.execute(\"\"\"
+    SELECT product, SUM(revenue), COUNT(*)
+    FROM sales WHERE date > date('now', '-7 days')
+    GROUP BY product ORDER BY SUM(revenue) DESC
+\"\"\").fetchall()
+
+# 2. Analyze with Claude
+client = anthropic.Anthropic()
+analysis = client.messages.create(
+    model="claude-sonnet-4-20250514",
+    messages=[{"role": "user", "content": f"Analyze this weekly sales data and highlight trends:\\n{rows}"}],
+).content[0].text
+
+# 3. Send report
+send_slack_message("#reports", analysis)""",
+        "run": "crontab: 0 8 * * 1 python weekly_analysis.py",
+        "learn": ["SQL queries", "Claude for analysis", "Data visualization", "Report delivery"],
+    },
+    "Lead Gen / CRM": {
+        "question": "I manage contacts and leads manually",
+        "pattern": "trigger -> api -> ai -> data",
+        "tools": ["Webhook", "Enrichment API", "Claude Scoring", "CRM Database"],
+        "apps": [
+            ("Google Sheets", "data", 560), ("HubSpot", "data", 203),
+            ("Gmail", "deliver", 230), ("Airtable", "data", 207),
+            ("OpenAI GPT-4", "ai", 205), ("Pipedrive", "data", 84),
+            ("Salesforce", "data", 50), ("Slack", "deliver", 85),
+        ],
+        "code": """import anthropic, requests
+
+def process_lead(lead):
+    # 1. Enrich with company data
+    company = requests.get(f"https://api.clearbit.com/v2/companies/find?domain={lead['domain']}").json()
+
+    # 2. Score with Claude
+    client = anthropic.Anthropic()
+    score = client.messages.create(
+        model="claude-sonnet-4-20250514",
+        messages=[{"role": "user", "content": f"Score this lead 1-10: {lead} Company: {company}"}],
+    ).content[0].text
+
+    # 3. Save to CRM
+    save_to_crm({**lead, "company": company["name"], "score": score})""",
+        "run": "python lead_handler.py  # triggered by webhook",
+        "learn": ["Enrichment APIs", "AI scoring", "CRM integration", "Webhook handlers"],
+    },
+    "Scheduled Notifications": {
+        "question": "I keep forgetting to check things",
+        "pattern": "trigger -> api -> logic -> deliver",
+        "tools": ["Cron Job", "HTTP Request", "Condition Check", "Slack/Email"],
+        "apps": [
+            ("Google Sheets", "data", 591), ("Gmail", "deliver", 315),
+            ("Slack", "deliver", 271), ("Telegram", "deliver", 196),
+            ("SMTP Email", "deliver", 177), ("Airtable", "data", 80),
+            ("Notion", "data", 55), ("Discord", "deliver", 45),
+        ],
+        "code": """import requests
+
+# 1. Check something
+response = requests.get("https://api.example.com/status")
+data = response.json()
+
+# 2. Decide if notification needed
+if data["items_overdue"] > 0:
+    # 3. Send alert
+    requests.post("https://hooks.slack.com/services/YOUR/WEBHOOK/URL",
+        json={"text": f"Alert: {data['items_overdue']} overdue items!"})""",
+        "run": "crontab: 0 9 * * * python check_and_notify.py",
+        "learn": ["Cron basics", "REST APIs", "Conditional logic", "Slack webhooks"],
+    },
+    "RAG / Knowledge Base": {
+        "question": "I'm always searching through my own documents",
+        "pattern": "trigger -> storage -> ai -> data",
+        "tools": ["Document Loader", "Embeddings", "Vector Store", "Claude Agent"],
+        "apps": [
+            ("OpenAI Embeddings", "ai", 428), ("Pinecone", "storage", 208),
+            ("OpenAI GPT-4", "ai", 374), ("Google Drive", "storage", 215),
+            ("Qdrant", "storage", 120), ("Supabase", "data", 95),
+            ("Google Gemini", "ai", 80), ("PostgreSQL (pgvector)", "data", 45),
+        ],
+        "code": """# Ingest phase: run once
+from sentence_transformers import SentenceTransformer
+import chromadb
+
+model = SentenceTransformer("all-MiniLM-L6-v2")
+db = chromadb.Client()
+collection = db.create_collection("docs")
+
+for doc in load_documents("./docs/"):
+    embedding = model.encode(doc.text)
+    collection.add(documents=[doc.text], embeddings=[embedding], ids=[doc.id])
+
+# Query phase: run per question
+def ask(question):
+    results = collection.query(query_texts=[question], n_results=3)
+    context = "\\n".join(results["documents"][0])
+    # Use Claude with retrieved context
+    return claude_answer(question, context)""",
+        "run": "python ingest.py && python query.py 'What is our refund policy?'",
+        "learn": ["Embeddings", "Vector databases", "RAG architecture", "Claude with context"],
+    },
+    "Form / Webhook Handler": {
+        "question": "When something arrives, I have to process it manually",
+        "pattern": "trigger -> transform -> logic -> data",
+        "tools": ["Webhook Server", "Data Validator", "Router", "Database"],
+        "apps": [
+            ("Google Sheets", "data", 553), ("Slack", "deliver", 210),
+            ("Gmail", "deliver", 196), ("Airtable", "data", 85),
+            ("Notion", "data", 70), ("Telegram", "deliver", 65),
+            ("PostgreSQL", "data", 40), ("Discord", "deliver", 35),
+        ],
+        "code": """from http.server import HTTPServer, BaseHTTPRequestHandler
+import json
+
+class WebhookHandler(BaseHTTPRequestHandler):
+    def do_POST(self):
+        data = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
+
+        # Validate
+        if not data.get("email") or not data.get("name"):
+            self.send_response(400)
+            return
+
+        # Process and store
+        save_to_database(data)
+        self.send_response(200)
+
+HTTPServer(("", 8080), WebhookHandler).serve_forever()""",
+        "run": "python webhook_server.py  # listens on port 8080",
+        "learn": ["HTTP servers", "JSON parsing", "Data validation", "Request handling"],
+    },
+}
+
+
 def main():
     print(f"Loading workflows from {DATA_DIR.name}/ ...")
     workflows = parse_directory(DATA_DIR)
@@ -351,6 +701,31 @@ def build_html(
     cat_labels, cat_values, top_patterns, pairs,
     use_case_data, complexity_tiers, building_blocks,
 ):
+    # --- Wizard data (baked into HTML as JSON) ---
+    wizard_items = []
+    for name, uc_meta in USE_CASES.items():
+        wiz = WIZARD_DATA.get(name)
+        if not wiz:
+            continue
+        data = use_case_data.get(name, {})
+        wizard_items.append({
+            "name": name,
+            "icon": uc_meta["icon"],
+            "question": wiz["question"],
+            "desc": uc_meta["desc"],
+            "pattern": wiz["pattern"],
+            "tools": wiz["tools"],
+            "apps": [{"name": a[0], "cat": a[1], "count": a[2]} for a in wiz.get("apps", [])],
+            "code": wiz["code"],
+            "run": wiz["run"],
+            "learn": wiz["learn"],
+            "claude_code": uc_meta["claude_code"],
+            "count": data.get("count", 0),
+            "pct": data.get("pct", 0),
+            "avg_nodes": data.get("avg_nodes", 0),
+        })
+    wizard_json = json.dumps(wizard_items, indent=2)
+
     # --- Use case cards ---
     uc_cards = ""
     for name, uc_meta in USE_CASES.items():
@@ -587,6 +962,52 @@ th {{ color:var(--text-muted); font-weight:600; font-size:0.8rem; text-transform
 footer {{ text-align:center; color:var(--text-muted); padding:2rem 0; font-size:0.85rem; border-top:1px solid var(--border); margin-top:2rem; }}
 footer a {{ color:var(--accent); text-decoration:none; }}
 code {{ background:var(--surface2); padding:2px 6px; border-radius:4px; font-size:0.85rem; }}
+
+/* Wizard */
+.wizard-section {{ border:2px solid var(--accent); }}
+.wizard-grid {{ display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:1rem; }}
+.wizard-card {{
+  background:var(--bg); border:1px solid var(--border); border-radius:8px;
+  padding:1.2rem; cursor:pointer; transition:all 0.2s;
+}}
+.wizard-card:hover {{ border-color:var(--accent); transform:translateY(-2px); }}
+.wizard-card-icon {{ font-size:1.5rem; margin-bottom:0.3rem; }}
+.wizard-card h4 {{ font-size:0.95rem; margin:0.3rem 0; }}
+.wizard-card p {{ color:var(--text-muted); font-size:0.85rem; margin:0; font-style:italic; }}
+.wizard-card .wizard-card-count {{ color:var(--accent); font-size:0.75rem; margin-top:0.4rem; }}
+.wizard-back {{
+  background:none; border:1px solid var(--border); color:var(--accent);
+  padding:6px 16px; border-radius:6px; cursor:pointer; margin-bottom:1.5rem;
+  font-size:0.9rem; transition:all 0.2s;
+}}
+.wizard-back:hover {{ background:var(--accent); color:var(--bg); }}
+.wizard-result-header {{ display:flex; align-items:center; gap:0.8rem; margin-bottom:1rem; }}
+.wizard-result-header h3 {{ margin:0; font-size:1.3rem; }}
+.wizard-columns {{ display:grid; grid-template-columns:1fr 1fr; gap:2rem; margin-top:1rem; }}
+@media (max-width:900px) {{ .wizard-columns {{ grid-template-columns:1fr; }} }}
+.wizard-col {{ min-width:0; }}
+.wiz-label {{ color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; font-weight:600; letter-spacing:0.5px; margin:1rem 0 0.3rem; }}
+.wiz-label:first-child {{ margin-top:0; }}
+.wiz-pattern-display {{ font-size:1.1rem; padding:0.5rem 0; }}
+.wiz-tools-list, .wiz-learn-list {{ list-style:none; padding:0; }}
+.wiz-tools-list li {{ padding:3px 0; font-size:0.9rem; }}
+.wiz-tools-list li::before {{ content:"\\2022 "; color:var(--accent); font-weight:bold; }}
+.wiz-learn-list li {{ padding:2px 0; font-size:0.85rem; color:var(--text-muted); }}
+.wiz-learn-list li::before {{ content:"\\2713 "; color:var(--green); }}
+.wiz-run {{ display:block; padding:8px 12px; margin-top:4px; font-size:0.85rem; word-break:break-all; }}
+.wiz-apps {{ display:flex; flex-wrap:wrap; gap:6px; margin-top:4px; }}
+.wiz-app {{
+  display:inline-flex; align-items:center; gap:5px;
+  background:var(--bg); border:1px solid var(--border); border-radius:14px;
+  padding:3px 10px; font-size:0.8rem;
+}}
+.wiz-app-count {{ color:var(--text-muted); font-size:0.7rem; }}
+.wiz-code {{
+  background:var(--bg); border:1px solid var(--border); border-radius:6px;
+  padding:1rem; font-size:0.8rem; line-height:1.5; overflow-x:auto;
+  white-space:pre; font-family:'SF Mono',SFMono-Regular,Consolas,monospace;
+  max-height:500px; overflow-y:auto;
+}}
 </style>
 </head>
 <body>
@@ -602,6 +1023,7 @@ code {{ background:var(--surface2); padding:2px 6px; border-radius:4px; font-siz
 </header>
 
 <nav>
+  <a href="#wizard">Build a Workflow</a>
   <a href="#use-cases">Use Cases</a>
   <a href="#complexity">Complexity</a>
   <a href="#building-blocks">Building Blocks</a>
@@ -609,6 +1031,56 @@ code {{ background:var(--surface2); padding:2px 6px; border-radius:4px; font-siz
   <a href="#patterns">Top Patterns</a>
   <a href="#connections">Connections</a>
 </nav>
+
+<!-- WIZARD -->
+<section id="wizard" class="wizard-section">
+  <h2>Build Your Workflow</h2>
+  <p class="section-desc">Pick what you want to automate. Get the pattern, the tools, and a code starter — based on {total_workflows:,} real workflows.</p>
+
+  <div id="wizard-step1">
+    <div class="wizard-grid" id="wizard-cards"></div>
+  </div>
+
+  <div id="wizard-step2" style="display:none;">
+    <button class="wizard-back" onclick="wizardBack()">&larr; Pick a different use case</button>
+    <div class="wizard-result">
+      <div class="wizard-result-header">
+        <span id="wiz-icon" class="uc-icon"></span>
+        <div>
+          <h3 id="wiz-name"></h3>
+          <span id="wiz-stats" class="uc-count"></span>
+        </div>
+      </div>
+      <p id="wiz-desc" class="uc-desc"></p>
+
+      <div class="wizard-columns">
+        <div class="wizard-col">
+          <div class="wiz-label">Pattern</div>
+          <div id="wiz-pattern" class="wiz-pattern-display"></div>
+
+          <div class="wiz-label">Building blocks you need</div>
+          <ul id="wiz-tools" class="wiz-tools-list"></ul>
+
+          <div class="wiz-label">Popular apps &amp; services used</div>
+          <div id="wiz-apps" class="wiz-apps"></div>
+
+          <div class="wiz-label">What you'll learn</div>
+          <ul id="wiz-learn" class="wiz-learn-list"></ul>
+
+          <div class="wiz-label">Claude Code approach</div>
+          <p id="wiz-claude" class="claude-approach"></p>
+
+          <div class="wiz-label">How to run it</div>
+          <code id="wiz-run" class="wiz-run"></code>
+        </div>
+        <div class="wizard-col">
+          <div class="wiz-label">Starter code</div>
+          <pre id="wiz-code" class="wiz-code"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
 <div class="stats-grid">
   <div class="stat-card"><div class="stat-number">{total_workflows:,}</div><div class="stat-label">Workflows Analyzed</div></div>
@@ -784,6 +1256,69 @@ new Chart(document.getElementById('patChart'), {{
     }}
   }}
 }});
+
+// --- Wizard ---
+const wizardData = {wizard_json};
+const stepColors = {{
+  trigger:'#3fb950', ai:'#d2a8ff', transform:'#58a6ff',
+  deliver:'#f78166', data:'#56d4dd', api:'#e3b341',
+  logic:'#8b949e', storage:'#79c0ff'
+}};
+
+function renderSteps(pattern) {{
+  return pattern.split(' -> ').map(s => {{
+    const c = stepColors[s] || '#8b949e';
+    const bg = c + '22';
+    return `<span class="step step-${{s}}">${{s}}</span>`;
+  }}).join(' &#8594; ');
+}}
+
+// Build wizard cards
+const cardsEl = document.getElementById('wizard-cards');
+wizardData.forEach((uc, i) => {{
+  const card = document.createElement('div');
+  card.className = 'wizard-card';
+  card.onclick = () => wizardSelect(i);
+  card.innerHTML = `
+    <div class="wizard-card-icon">${{uc.icon}}</div>
+    <h4>${{uc.name}}</h4>
+    <p>"${{uc.question}}"</p>
+    <div class="wizard-card-count">${{uc.count.toLocaleString()}} workflows (${{uc.pct.toFixed(0)}}%)</div>
+  `;
+  cardsEl.appendChild(card);
+}});
+
+function wizardSelect(index) {{
+  const uc = wizardData[index];
+  document.getElementById('wiz-icon').textContent = uc.icon;
+  document.getElementById('wiz-name').textContent = uc.name;
+  document.getElementById('wiz-stats').textContent =
+    `${{uc.count.toLocaleString()}} real workflows · avg. ${{uc.avg_nodes.toFixed(0)}} nodes`;
+  document.getElementById('wiz-desc').textContent = uc.desc;
+  document.getElementById('wiz-pattern').innerHTML = renderSteps(uc.pattern);
+  document.getElementById('wiz-claude').textContent = uc.claude_code;
+  document.getElementById('wiz-run').textContent = uc.run;
+  document.getElementById('wiz-code').textContent = uc.code;
+
+  const toolsEl = document.getElementById('wiz-tools');
+  toolsEl.innerHTML = uc.tools.map(t => `<li>${{t}}</li>`).join('');
+
+  const appsEl = document.getElementById('wiz-apps');
+  appsEl.innerHTML = uc.apps.map(a =>
+    `<span class="wiz-app"><span class="step step-${{a.cat}}">${{a.cat}}</span>${{a.name}} <span class="wiz-app-count">${{a.count.toLocaleString()}}x</span></span>`
+  ).join('');
+
+  const learnEl = document.getElementById('wiz-learn');
+  learnEl.innerHTML = uc.learn.map(l => `<li>${{l}}</li>`).join('');
+
+  document.getElementById('wizard-step1').style.display = 'none';
+  document.getElementById('wizard-step2').style.display = 'block';
+}}
+
+function wizardBack() {{
+  document.getElementById('wizard-step1').style.display = 'block';
+  document.getElementById('wizard-step2').style.display = 'none';
+}}
 </script>
 </body>
 </html>"""
