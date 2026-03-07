@@ -1,0 +1,72 @@
+[
+  {
+    "id": "eval_01",
+    "description": "Weekly email digest should match trigger + ai + deliver pattern",
+    "query": "Send a weekly AI summary of articles by email",
+    "expected_categories": ["trigger", "ai", "deliver"],
+    "expected_pattern_contains": ["trigger", "ai", "deliver"]
+  },
+  {
+    "id": "eval_02",
+    "description": "Data analysis workflow should include data + ai categories",
+    "query": "Analyze spreadsheet data and generate a report",
+    "expected_categories": ["data", "ai"],
+    "expected_pattern_contains": ["data", "ai"]
+  },
+  {
+    "id": "eval_03",
+    "description": "API scraping workflow should detect api + transform",
+    "query": "Scrape a website API and transform the results into a CSV",
+    "expected_categories": ["api", "transform"],
+    "expected_pattern_contains": ["api", "transform"]
+  },
+  {
+    "id": "eval_04",
+    "description": "Notification workflow should detect trigger + deliver",
+    "query": "When a new file appears, send a Slack notification",
+    "expected_categories": ["trigger", "deliver"],
+    "expected_pattern_contains": ["trigger", "deliver"]
+  },
+  {
+    "id": "eval_05",
+    "description": "Complex workflow should detect multiple categories",
+    "query": "Fetch data from database, analyze with AI, filter results, and email a summary",
+    "expected_categories": ["data", "ai", "deliver"],
+    "expected_pattern_contains": ["data", "ai", "deliver"]
+  },
+  {
+    "id": "eval_06",
+    "description": "File processing should detect storage",
+    "query": "Download files from Google Drive and upload them to S3",
+    "expected_categories": ["storage"],
+    "expected_pattern_contains": ["storage"]
+  },
+  {
+    "id": "eval_07",
+    "description": "Conditional workflow should detect logic",
+    "query": "If the sentiment is negative, route to human review, otherwise auto-respond",
+    "expected_categories": ["logic"],
+    "expected_pattern_contains": ["logic"]
+  },
+  {
+    "id": "eval_08",
+    "description": "Simple AI generation should detect ai",
+    "query": "Generate product descriptions from a list of features",
+    "expected_categories": ["ai"],
+    "expected_pattern_contains": ["ai"]
+  },
+  {
+    "id": "eval_09",
+    "description": "Scheduled data pipeline should detect trigger + data + transform",
+    "query": "Every morning, pull new entries from the database and format them",
+    "expected_categories": ["trigger", "data", "transform"],
+    "expected_pattern_contains": ["trigger", "data"]
+  },
+  {
+    "id": "eval_10",
+    "description": "Implementation suggestion should contain MCP server for data patterns",
+    "query_pattern": "trigger -> data -> ai -> deliver",
+    "expected_components": ["MCP server", "Claude Agent"],
+    "expected_complexity": "medium"
+  }
+]
