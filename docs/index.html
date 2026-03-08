@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Workflow Patterns — 7,698 Automation Workflows Analyzed</title>
+<title>Workflow Patterns — 15 Automation Workflows Analyzed</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1/themes/prism-tomorrow.min.css">
 <script src="https://cdn.jsdelivr.net/npm/prismjs@1/prism.min.js"></script>
@@ -148,7 +148,7 @@ code { background:var(--surface2); padding:2px 6px; border-radius:4px; font-size
 <header>
   <h1>Workflow <span>Patterns</span></h1>
   <p class="subtitle">
-    We analyzed 7,698 real n8n automation workflows and mapped every node
+    We analyzed 15 real n8n automation workflows and mapped every node
     to an abstract category (trigger, AI, transform, deliver, &hellip;). The result:
     universal patterns that show how people actually build automations &mdash;
     and how you can build yours.
@@ -164,7 +164,7 @@ code { background:var(--surface2); padding:2px 6px; border-radius:4px; font-size
 <!-- WIZARD -->
 <section id="wizard" class="wizard-section">
   <h2>What Do You Want to Automate?</h2>
-  <p class="section-desc">Pick a use case below. Get the pattern, the tools, and starter code &mdash; all based on 7,698 real workflows.</p>
+  <p class="section-desc">Pick a use case below. Get the pattern, the tools, and starter code &mdash; all based on 15 real workflows.</p>
 
   <div id="wizard-step1">
     <div class="wizard-grid" id="wizard-cards"></div>
@@ -217,8 +217,8 @@ code { background:var(--surface2); padding:2px 6px; border-radius:4px; font-size
 </section>
 
 <div class="stats-grid">
-  <div class="stat-card"><div class="stat-number">7,698</div><div class="stat-label">Workflows Analyzed</div></div>
-  <div class="stat-card"><div class="stat-number">2,592</div><div class="stat-label">Unique Patterns Found</div></div>
+  <div class="stat-card"><div class="stat-number">15</div><div class="stat-label">Workflows Analyzed</div></div>
+  <div class="stat-card"><div class="stat-number">14</div><div class="stat-label">Unique Patterns Found</div></div>
   <div class="stat-card"><div class="stat-number">12</div><div class="stat-label">Use Case Categories</div></div>
 </div>
 
@@ -231,80 +231,80 @@ code { background:var(--surface2); padding:2px 6px; border-radius:4px; font-size
     <span class="step step-ai">ai</span> &rarr;
     <span class="step step-deliver">deliver</span>.
     The specific tool doesn't matter &mdash; what matters is the structure.
-    These are the 10 most frequent patterns across all 7,698 workflows.
+    These are the 10 most frequent patterns across all 15 workflows.
   </p>
   <div class="chart-container" style="margin-bottom:1.5rem;">
     <canvas id="patChart"></canvas>
   </div>
   
         <div class="pattern-card">
-            <div class="pattern-sig"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-api">api</span> &rarr; <span class="step step-logic">logic</span></div>
-            <div class="pattern-meta">
-                <span class="pattern-count">187x</span>
-                <span class="pattern-examples">httpRequest, splitOut, if, filter, filter, set</span>
-            </div>
-        </div>
-        <div class="pattern-card">
-            <div class="pattern-sig"><span class="step step-other">other</span> &rarr; <span class="step step-trigger">trigger</span></div>
-            <div class="pattern-meta">
-                <span class="pattern-count">116x</span>
-                <span class="pattern-examples">mcpTrigger, bubbleTool, bubbleTool, bubbleTool</span>
-            </div>
-        </div>
-        <div class="pattern-card">
-            <div class="pattern-sig"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-api">api</span></div>
-            <div class="pattern-meta">
-                <span class="pattern-count">95x</span>
-                <span class="pattern-examples">httpRequest, httpRequest, code, set, set, httpRequest</span>
-            </div>
-        </div>
-        <div class="pattern-card">
-            <div class="pattern-sig"><span class="step step-api">api</span> &rarr; <span class="step step-trigger">trigger</span></div>
-            <div class="pattern-meta">
-                <span class="pattern-count">85x</span>
-                <span class="pattern-examples">mcpTrigger, httpRequestTool, httpRequestTool, httpRequestTool, httpRequestTool, httpRequestTool</span>
-            </div>
-        </div>
-        <div class="pattern-card">
-            <div class="pattern-sig"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-logic">logic</span> &rarr; <span class="step step-api">api</span></div>
-            <div class="pattern-meta">
-                <span class="pattern-count">63x</span>
-                <span class="pattern-examples">gmailTrigger, code, set, if, httpRequest, httpRequest</span>
-            </div>
-        </div>
-        <div class="pattern-card">
-            <div class="pattern-sig"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-ai">ai</span></div>
-            <div class="pattern-meta">
-                <span class="pattern-count">62x</span>
-                <span class="pattern-examples">chatTrigger, agent, mcpClientTool, mcpClientTool, lmChatOpenAi</span>
-            </div>
-        </div>
-        <div class="pattern-card">
-            <div class="pattern-sig"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-other">other</span></div>
-            <div class="pattern-meta">
-                <span class="pattern-count">50x</span>
-                <span class="pattern-examples">manualTrigger, powerBi, powerBi</span>
-            </div>
-        </div>
-        <div class="pattern-card">
-            <div class="pattern-sig"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-transform">transform</span></div>
-            <div class="pattern-meta">
-                <span class="pattern-count">49x</span>
-                <span class="pattern-examples">executeWorkflowTrigger, set, set, httpRequest</span>
-            </div>
-        </div>
-        <div class="pattern-card">
-            <div class="pattern-sig"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-logic">logic</span></div>
-            <div class="pattern-meta">
-                <span class="pattern-count">48x</span>
-                <span class="pattern-examples">set, merge, merge, scheduleTrigger, scheduleTrigger</span>
-            </div>
-        </div>
-        <div class="pattern-card">
             <div class="pattern-sig"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-api">api</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-data">data</span></div>
             <div class="pattern-meta">
-                <span class="pattern-count">47x</span>
-                <span class="pattern-examples">formTrigger, googleSheets, httpRequest, code</span>
+                <span class="pattern-count">2x</span>
+                <span class="pattern-examples">scheduleTrigger, httpRequest, html, code, googleSheets</span>
+            </div>
+        </div>
+        <div class="pattern-card">
+            <div class="pattern-sig"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-ai">ai</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-deliver">deliver</span></div>
+            <div class="pattern-meta">
+                <span class="pattern-count">1x</span>
+                <span class="pattern-examples">errorTrigger, set, lmChatGoogleGemini, googleSheetsTrigger, set, chainLlm</span>
+            </div>
+        </div>
+        <div class="pattern-card">
+            <div class="pattern-sig"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-ai">ai</span> &rarr; <span class="step step-data">data</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-api">api</span></div>
+            <div class="pattern-meta">
+                <span class="pattern-count">1x</span>
+                <span class="pattern-examples">chatTrigger, memoryBufferWindow, set, nocoDbTool, set, httpRequest</span>
+            </div>
+        </div>
+        <div class="pattern-card">
+            <div class="pattern-sig"><span class="step step-ai">ai</span> &rarr; <span class="step step-trigger">trigger</span> &rarr; <span class="step step-storage">storage</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-deliver">deliver</span> &rarr; <span class="step step-data">data</span></div>
+            <div class="pattern-meta">
+                <span class="pattern-count">1x</span>
+                <span class="pattern-examples">lmChatOpenAi, agent, agent, agent, agent, gmail</span>
+            </div>
+        </div>
+        <div class="pattern-card">
+            <div class="pattern-sig"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-ai">ai</span> &rarr; <span class="step step-data">data</span></div>
+            <div class="pattern-meta">
+                <span class="pattern-count">1x</span>
+                <span class="pattern-examples">manualTrigger, lmChatOpenAi, outputParserStructured, agent, googleSheets, googleSheets</span>
+            </div>
+        </div>
+        <div class="pattern-card">
+            <div class="pattern-sig"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-ai">ai</span> &rarr; <span class="step step-api">api</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-storage">storage</span> &rarr; <span class="step step-deliver">deliver</span> &rarr; <span class="step step-data">data</span></div>
+            <div class="pattern-meta">
+                <span class="pattern-count">1x</span>
+                <span class="pattern-examples">convertToFile, agent, googleDrive, googleSheets, telegram, telegramTrigger</span>
+            </div>
+        </div>
+        <div class="pattern-card">
+            <div class="pattern-sig"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-api">api</span> &rarr; <span class="step step-data">data</span></div>
+            <div class="pattern-meta">
+                <span class="pattern-count">1x</span>
+                <span class="pattern-examples">manualTrigger, set, httpRequest, html, code, googleSheets</span>
+            </div>
+        </div>
+        <div class="pattern-card">
+            <div class="pattern-sig"><span class="step step-ai">ai</span> &rarr; <span class="step step-trigger">trigger</span> &rarr; <span class="step step-deliver">deliver</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-logic">logic</span> &rarr; <span class="step step-api">api</span></div>
+            <div class="pattern-meta">
+                <span class="pattern-count">1x</span>
+                <span class="pattern-examples">code, removeDuplicates, removeDuplicates, splitOut, aggregate, httpRequest</span>
+            </div>
+        </div>
+        <div class="pattern-card">
+            <div class="pattern-sig"><span class="step step-trigger">trigger</span> &rarr; <span class="step step-storage">storage</span> &rarr; <span class="step step-api">api</span> &rarr; <span class="step step-transform">transform</span></div>
+            <div class="pattern-meta">
+                <span class="pattern-count">1x</span>
+                <span class="pattern-examples">manualTrigger, googleDrive, googleDrive, httpRequest, httpRequest, function</span>
+            </div>
+        </div>
+        <div class="pattern-card">
+            <div class="pattern-sig"><span class="step step-ai">ai</span> &rarr; <span class="step step-trigger">trigger</span> &rarr; <span class="step step-logic">logic</span> &rarr; <span class="step step-deliver">deliver</span> &rarr; <span class="step step-transform">transform</span> &rarr; <span class="step step-api">api</span></div>
+            <div class="pattern-meta">
+                <span class="pattern-count">1x</span>
+                <span class="pattern-examples">openAi, httpRequest, openAi, splitOut, httpRequest, set</span>
             </div>
         </div>
 </section>
@@ -327,121 +327,121 @@ code { background:var(--surface2); padding:2px 6px; border-radius:4px; font-size
             <td><span class="block-name">HTTP Request</span></td>
             <td><span class="step step-api">api</span></td>
             <td class="block-desc">Call any REST API endpoint</td>
-            <td><div class="bar" style="width:280px">11,055</div></td>
-        </tr>
-        <tr>
-            <td><span class="block-name">Code (JavaScript/Python)</span></td>
-            <td><span class="step step-transform">transform</span></td>
-            <td class="block-desc">Custom code for any transformation</td>
-            <td><div class="bar" style="width:280px">10,428</div></td>
+            <td><div class="bar" style="width:1px">24</div></td>
         </tr>
         <tr>
             <td><span class="block-name">Set Fields</span></td>
             <td><span class="step step-transform">transform</span></td>
             <td class="block-desc">Assign or rename data fields</td>
-            <td><div class="bar" style="width:280px">9,546</div></td>
+            <td><div class="bar" style="width:1px">16</div></td>
         </tr>
         <tr>
-            <td><span class="block-name">If Condition</span></td>
-            <td><span class="step step-logic">logic</span></td>
-            <td class="block-desc">Branch workflow based on conditions</td>
-            <td><div class="bar" style="width:280px">6,160</div></td>
-        </tr>
-        <tr>
-            <td><span class="block-name">Google Sheets</span></td>
-            <td><span class="step step-data">data</span></td>
-            <td class="block-desc">Read/write spreadsheet data</td>
-            <td><div class="bar" style="width:280px">5,604</div></td>
+            <td><span class="block-name">Code (JavaScript/Python)</span></td>
+            <td><span class="step step-transform">transform</span></td>
+            <td class="block-desc">Custom code for any transformation</td>
+            <td><div class="bar" style="width:0px">13</div></td>
         </tr>
         <tr>
             <td><span class="block-name">AI Agent</span></td>
             <td><span class="step step-ai">ai</span></td>
             <td class="block-desc">Autonomous AI agent with tool access</td>
-            <td><div class="bar" style="width:280px">4,310</div></td>
-        </tr>
-        <tr>
-            <td><span class="block-name">OpenAI Chat</span></td>
-            <td><span class="step step-ai">ai</span></td>
-            <td class="block-desc">GPT-4o / GPT-4 language model</td>
-            <td><div class="bar" style="width:217px">3,268</div></td>
+            <td><div class="bar" style="width:0px">11</div></td>
         </tr>
         <tr>
             <td><span class="block-name">Telegram</span></td>
             <td><span class="step step-deliver">deliver</span></td>
             <td class="block-desc">Send messages via Telegram</td>
-            <td><div class="bar" style="width:170px">2,560</div></td>
+            <td><div class="bar" style="width:0px">11</div></td>
         </tr>
         <tr>
-            <td><span class="block-name">Gmail</span></td>
-            <td><span class="step step-deliver">deliver</span></td>
-            <td class="block-desc">Send or read emails via Gmail</td>
-            <td><div class="bar" style="width:159px">2,391</div></td>
+            <td><span class="block-name">Google Sheets</span></td>
+            <td><span class="step step-data">data</span></td>
+            <td class="block-desc">Read/write spreadsheet data</td>
+            <td><div class="bar" style="width:0px">10</div></td>
         </tr>
         <tr>
-            <td><span class="block-name">Schedule Trigger</span></td>
-            <td><span class="step step-trigger">trigger</span></td>
-            <td class="block-desc">Run workflow on a schedule</td>
-            <td><div class="bar" style="width:154px">2,324</div></td>
-        </tr>
-        <tr>
-            <td><span class="block-name">Merge</span></td>
+            <td><span class="block-name">If Condition</span></td>
             <td><span class="step step-logic">logic</span></td>
-            <td class="block-desc">Combine data from multiple branches</td>
-            <td><div class="bar" style="width:153px">2,296</div></td>
+            <td class="block-desc">Branch workflow based on conditions</td>
+            <td><div class="bar" style="width:0px">10</div></td>
         </tr>
         <tr>
-            <td><span class="block-name">Structured Output</span></td>
+            <td><span class="block-name">OpenAI Chat</span></td>
             <td><span class="step step-ai">ai</span></td>
-            <td class="block-desc">Parse AI output into structured data</td>
-            <td><div class="bar" style="width:133px">1,999</div></td>
-        </tr>
-        <tr>
-            <td><span class="block-name">Split In Batches</span></td>
-            <td><span class="step step-logic">logic</span></td>
-            <td class="block-desc">Process items in smaller groups</td>
-            <td><div class="bar" style="width:123px">1,854</div></td>
-        </tr>
-        <tr>
-            <td><span class="block-name">Manual Trigger</span></td>
-            <td><span class="step step-trigger">trigger</span></td>
-            <td class="block-desc">Start workflow with a button click</td>
-            <td><div class="bar" style="width:122px">1,839</div></td>
-        </tr>
-        <tr>
-            <td><span class="block-name">OpenAI</span></td>
-            <td><span class="step step-ai">ai</span></td>
-            <td class="block-desc">Direct OpenAI API calls</td>
-            <td><div class="bar" style="width:122px">1,832</div></td>
+            <td class="block-desc">GPT-4o / GPT-4 language model</td>
+            <td><div class="bar" style="width:0px">7</div></td>
         </tr>
         <tr>
             <td><span class="block-name">Google Drive</span></td>
             <td><span class="step step-storage">storage</span></td>
             <td class="block-desc">Upload/download files from Drive</td>
-            <td><div class="bar" style="width:118px">1,779</div></td>
+            <td><div class="bar" style="width:0px">5</div></td>
         </tr>
         <tr>
-            <td><span class="block-name">httpRequestTool</span></td>
+            <td><span class="block-name">Manual Trigger</span></td>
+            <td><span class="step step-trigger">trigger</span></td>
+            <td class="block-desc">Start workflow with a button click</td>
+            <td><div class="bar" style="width:0px">5</div></td>
+        </tr>
+        <tr>
+            <td><span class="block-name">Split In Batches</span></td>
+            <td><span class="step step-logic">logic</span></td>
+            <td class="block-desc">Process items in smaller groups</td>
+            <td><div class="bar" style="width:0px">5</div></td>
+        </tr>
+        <tr>
+            <td><span class="block-name">Google Gemini</span></td>
+            <td><span class="step step-ai">ai</span></td>
+            <td class="block-desc">Gemini language model</td>
+            <td><div class="bar" style="width:0px">4</div></td>
+        </tr>
+        <tr>
+            <td><span class="block-name">LLM Chain</span></td>
+            <td><span class="step step-ai">ai</span></td>
+            <td class="block-desc">Chain multiple AI prompts together</td>
+            <td><div class="bar" style="width:0px">4</div></td>
+        </tr>
+        <tr>
+            <td><span class="block-name">vectorStorePinecone</span></td>
             <td><span class="step step-other">other</span></td>
             <td class="block-desc"></td>
-            <td><div class="bar" style="width:112px">1,693</div></td>
+            <td><div class="bar" style="width:0px">4</div></td>
+        </tr>
+        <tr>
+            <td><span class="block-name">Structured Output</span></td>
+            <td><span class="step step-ai">ai</span></td>
+            <td class="block-desc">Parse AI output into structured data</td>
+            <td><div class="bar" style="width:0px">4</div></td>
+        </tr>
+        <tr>
+            <td><span class="block-name">Gmail</span></td>
+            <td><span class="step step-deliver">deliver</span></td>
+            <td class="block-desc">Send or read emails via Gmail</td>
+            <td><div class="bar" style="width:0px">3</div></td>
+        </tr>
+        <tr>
+            <td><span class="block-name">Chat Memory</span></td>
+            <td><span class="step step-ai">ai</span></td>
+            <td class="block-desc">Remember conversation history</td>
+            <td><div class="bar" style="width:0px">3</div></td>
+        </tr>
+        <tr>
+            <td><span class="block-name">Telegram Trigger</span></td>
+            <td><span class="step step-trigger">trigger</span></td>
+            <td class="block-desc">React to Telegram messages</td>
+            <td><div class="bar" style="width:0px">3</div></td>
+        </tr>
+        <tr>
+            <td><span class="block-name">html</span></td>
+            <td><span class="step step-other">other</span></td>
+            <td class="block-desc"></td>
+            <td><div class="bar" style="width:0px">3</div></td>
         </tr>
         <tr>
             <td><span class="block-name">Split Out</span></td>
             <td><span class="step step-transform">transform</span></td>
             <td class="block-desc">Split arrays into individual items</td>
-            <td><div class="bar" style="width:105px">1,582</div></td>
-        </tr>
-        <tr>
-            <td><span class="block-name">Webhook</span></td>
-            <td><span class="step step-trigger">trigger</span></td>
-            <td class="block-desc">Receive HTTP requests as triggers</td>
-            <td><div class="bar" style="width:101px">1,525</div></td>
-        </tr>
-        <tr>
-            <td><span class="block-name">Switch</span></td>
-            <td><span class="step step-logic">logic</span></td>
-            <td class="block-desc">Route to different paths by value</td>
-            <td><div class="bar" style="width:99px">1,491</div></td>
+            <td><div class="bar" style="width:0px">3</div></td>
         </tr></tbody>
   </table>
 </section>
@@ -461,8 +461,8 @@ code { background:var(--surface2); padding:2px 6px; border-radius:4px; font-size
 new Chart(document.getElementById('patChart'), {
   type:'bar',
   data:{
-    labels:["trigger -> transform -> api -> logic", "other -> trigger", "trigger -> transform -> api", "api -> trigger", "trigger -> transform -> logic -> api", "trigger -> ai", "trigger -> other", "trigger -> transform", "trigger -> transform -> logic", "trigger -> api -> transform -> data"],
-    datasets:[{ data:[187, 116, 95, 85, 63, 62, 50, 49, 48, 47], backgroundColor:'#58a6ff', borderRadius:3 }]
+    labels:["trigger -> api -> transform -> data", "trigger -> ai -> transform -> deliver", "trigger -> ai -> data -> transform -> api", "ai -> trigger -> storage -> transform -> deliver -> data", "trigger -> ai -> data", "trigger -> ai -> api -> transform -> storage -> deliver -> data", "trigger -> transform -> api -> data", "ai -> trigger -> deliver -> transform -> logic -> api", "trigger -> storage -> api -> transform", "ai -> trigger -> logic -> deliver -> transform -> api"],
+    datasets:[{ data:[2, 1, 1, 1, 1, 1, 1, 1, 1, 1], backgroundColor:'#58a6ff', borderRadius:3 }]
   },
   options:{
     indexAxis:'y', responsive:true, maintainAspectRatio:false,
@@ -539,10 +539,14 @@ const wizardData = [
       "MCP tool design"
     ],
     "claude_code": "Claude agent + MCP servers for data access + CLAUDE.md for behavior",
-    "count": 2816,
-    "pct": 36.58093011171733,
-    "avg_nodes": 18.986150568181817,
-    "example": null
+    "count": 6,
+    "pct": 40.0,
+    "avg_nodes": 20.666666666666668,
+    "example": {
+      "path": "examples/ai-chatbot",
+      "label": "Runnable Example",
+      "desc": "22 tests, Claude API streaming, 5 personas, conversation memory \u2014 ready to run"
+    }
   },
   {
     "name": "AI Content Creation",
@@ -607,9 +611,9 @@ const wizardData = [
       "Modular workflow design"
     ],
     "claude_code": "Cron trigger + Claude agent for content + MCP server for delivery",
-    "count": 2150,
-    "pct": 27.929332294102366,
-    "avg_nodes": 19.02093023255814,
+    "count": 7,
+    "pct": 46.666666666666664,
+    "avg_nodes": 19.0,
     "example": {
       "path": "examples/ai-content-creation",
       "label": "Runnable Example",
@@ -679,9 +683,9 @@ const wizardData = [
       "Scheduled jobs"
     ],
     "claude_code": "Python script + MCP server for data sources + cron scheduler",
-    "count": 1127,
-    "pct": 14.640166276955052,
-    "avg_nodes": 13.283052351375332,
+    "count": 3,
+    "pct": 20.0,
+    "avg_nodes": 5.0,
     "example": null
   },
   {
@@ -747,9 +751,9 @@ const wizardData = [
       "Rate limiting"
     ],
     "claude_code": "Claude agent for content + MCP servers for each platform",
-    "count": 1300,
-    "pct": 16.887503247596776,
-    "avg_nodes": 20.173076923076923,
+    "count": 4,
+    "pct": 26.666666666666668,
+    "avg_nodes": 19.25,
     "example": null
   },
   {
@@ -814,9 +818,9 @@ const wizardData = [
       "App passwords"
     ],
     "claude_code": "MCP server for email + trigger script + optional Claude for personalization",
-    "count": 1329,
-    "pct": 17.26422447388932,
-    "avg_nodes": 16.494356659142213,
+    "count": 0,
+    "pct": 0.0,
+    "avg_nodes": 0.0,
     "example": null
   },
   {
@@ -882,9 +886,9 @@ const wizardData = [
       "File processing"
     ],
     "claude_code": "Claude agent with file tools + MCP server for storage",
-    "count": 1096,
-    "pct": 14.237464276435437,
-    "avg_nodes": 23.598540145985403,
+    "count": 5,
+    "pct": 33.33333333333333,
+    "avg_nodes": 24.8,
     "example": null
   },
   {
@@ -950,9 +954,9 @@ const wizardData = [
       "Error handling"
     ],
     "claude_code": "MCP server wrapping the API + Python transform script + data MCP server",
-    "count": 738,
-    "pct": 9.586905689789555,
-    "avg_nodes": 13.462059620596206,
+    "count": 3,
+    "pct": 20.0,
+    "avg_nodes": 5.0,
     "example": null
   },
   {
@@ -1018,9 +1022,9 @@ const wizardData = [
       "Report delivery"
     ],
     "claude_code": "Claude agent + MCP server for data access + analysis skill",
-    "count": 734,
-    "pct": 9.534944141335412,
-    "avg_nodes": 18.88283378746594,
+    "count": 2,
+    "pct": 13.333333333333334,
+    "avg_nodes": 21.5,
     "example": null
   },
   {
@@ -1086,9 +1090,9 @@ const wizardData = [
       "Webhook handlers"
     ],
     "claude_code": "MCP server for CRM + Claude agent for scoring + webhook trigger",
-    "count": 536,
-    "pct": 6.962847492855287,
-    "avg_nodes": 16.145522388059703,
+    "count": 0,
+    "pct": 0.0,
+    "avg_nodes": 0.0,
     "example": null
   },
   {
@@ -1154,9 +1158,9 @@ const wizardData = [
       "Slack webhooks"
     ],
     "claude_code": "Cron job + Python script + MCP server for notifications",
-    "count": 591,
-    "pct": 7.677318784099767,
-    "avg_nodes": 12.71404399323181,
+    "count": 0,
+    "pct": 0.0,
+    "avg_nodes": 0.0,
     "example": null
   },
   {
@@ -1222,9 +1226,9 @@ const wizardData = [
       "Claude with context"
     ],
     "claude_code": "Claude agent + vector store MCP server + document ingestion script",
-    "count": 333,
-    "pct": 4.325798908807482,
-    "avg_nodes": 26.32132132132132,
+    "count": 2,
+    "pct": 13.333333333333334,
+    "avg_nodes": 30.0,
     "example": null
   },
   {
@@ -1290,9 +1294,9 @@ const wizardData = [
       "Request handling"
     ],
     "claude_code": "Python webhook server + data validation script + MCP server for storage",
-    "count": 891,
-    "pct": 11.574434918160561,
-    "avg_nodes": 12.526374859708193,
+    "count": 1,
+    "pct": 6.666666666666667,
+    "avg_nodes": 3.0,
     "example": null
   }
 ];
