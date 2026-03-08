@@ -152,10 +152,27 @@ Claude will search the pattern database, find matching workflows, and suggest an
 | `list_categories()` | Show category frequency and common connections |
 | `show_all_patterns()` | List all unique patterns ranked by frequency |
 
+## Runnable Examples
+
+Each example implements a real workflow pattern with current tools — not just a blueprint, but working code you can run.
+
+| Example | Pattern | What it does |
+|---------|---------|-------------|
+| [AI Content Creation](examples/ai-content-creation/) | `api -> ai -> transform -> deliver` | Reads RSS feeds, summarizes with Claude, saves a markdown digest |
+
+```bash
+cd examples/ai-content-creation
+uv sync
+export ANTHROPIC_API_KEY=sk-ant-...
+uv run python run.py
+```
+
+More examples coming: AI Chatbot, Data Pipeline, Email Automation.
+
 ## Development
 
 ```bash
-uv run pytest -v          # 20 tests across 4 modules
+uv run pytest -v          # 35 tests across 8 modules
 uv run ruff check .       # Lint
 ```
 
@@ -169,6 +186,8 @@ workflow-patterns/
 │   ├── patterns/analyzer.py       # Pattern extraction, node stats, Jaccard similarity
 │   ├── translator/claude_code.py  # Pattern -> Claude Code architecture mapping
 │   └── mcp_server/server.py       # 4 MCP tools for Claude Code integration
+├── examples/
+│   └── ai-content-creation/       # First runnable example (15 tests, Claude API)
 ├── scripts/
 │   └── generate_site.py           # Static site generator with interactive wizard
 ├── docs/
