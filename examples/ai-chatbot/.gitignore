@@ -1,0 +1,5 @@
+.venv/
+conversations/
+__pycache__/
+*.egg-info/
+.env
