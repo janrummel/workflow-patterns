@@ -162,6 +162,7 @@ Each example implements a real workflow pattern with current tools — not just 
 |---------|---------|-------------|
 | [AI Content Creation](examples/ai-content-creation/) | `api -> ai -> transform -> deliver` | Fetches RSS feeds, summarizes with Claude, saves a markdown digest. Interactive selection from 60 curated feeds across 6 categories. |
 | [AI Chatbot](examples/ai-chatbot/) | `trigger -> ai -> data -> deliver` | Streaming terminal chat with 5 persona presets and conversation persistence |
+| [Email Automation](examples/email-automation/) | `trigger -> transform -> deliver` | Template-based emails with 5 presets, HTML rendering, and optional SMTP delivery |
 
 ```bash
 cd examples/ai-content-creation
@@ -171,12 +172,12 @@ uv run python run.py           # interactive feed selection
 uv run python run.py --feeds https://hnrss.org/newest?points=100  # or custom
 ```
 
-More examples coming: Data Pipeline, Email Automation.
+More examples coming: Data Pipeline, Social Media Automation, and more.
 
 ## Development
 
 ```bash
-uv run pytest -v          # 72 tests across 15 modules
+uv run pytest -v          # 97 tests across 20 modules
 uv run ruff check .       # Lint
 ```
 
@@ -192,7 +193,8 @@ workflow-patterns/
 │   └── mcp_server/server.py       # 4 MCP tools for Claude Code integration
 ├── examples/
 │   ├── ai-chatbot/                # Runnable example (22 tests, streaming API, 5 personas)
-│   └── ai-content-creation/       # Runnable example (30 tests, Claude API, 60 curated feeds)
+│   ├── ai-content-creation/       # Runnable example (30 tests, Claude API, 60 curated feeds)
+│   └── email-automation/          # Runnable example (25 tests, 5 templates, HTML + SMTP)
 ├── scripts/
 │   └── generate_site.py           # Static site generator with interactive wizard
 ├── docs/
