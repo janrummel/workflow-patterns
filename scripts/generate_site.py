@@ -338,8 +338,13 @@ msg = EmailMessage()
 msg["Subject"] = "Your Weekly Digest"
 msg.set_content(summary)
 # ... send via SMTP""",
-        "run": "crontab: 0 7 * * 1 python weekly_digest.py",
-        "learn": ["REST API calls", "Claude for summarization", "Email automation", "Cron scheduling"],
+        "run": "cd examples/ai-content-creation && uv sync && uv run python run.py",
+        "learn": ["RSS/Atom feed parsing", "Claude for summarization", "Markdown generation", "Modular workflow design"],
+        "example": {
+            "path": "examples/ai-content-creation",
+            "label": "Runnable Example",
+            "desc": "15 tests, Claude API, RSS feeds — ready to run",
+        },
     },
     "Data Pipeline / ETL": {
         "question": "I copy data from A to B, always the same way",
@@ -680,6 +685,7 @@ def build_html(
             "count": data.get("count", 0),
             "pct": data.get("pct", 0),
             "avg_nodes": data.get("avg_nodes", 0),
+            "example": wiz.get("example"),
         })
     wizard_json = json.dumps(wizard_items, indent=2)
 
@@ -841,6 +847,12 @@ code {{ background:var(--surface2); padding:2px 6px; border-radius:4px; font-siz
 .wiz-app-item::after {{ content:" · "; color:var(--border); }}
 .wiz-app-item:last-child::after {{ content:""; }}
 .wiz-app-count {{ color:var(--text-muted); font-size:0.7rem; }}
+.wiz-example-link {{
+  display:block; padding:10px 14px; border:2px solid var(--green); border-radius:8px;
+  color:var(--green); text-decoration:none; font-weight:600; font-size:0.9rem;
+  transition:all 0.2s; text-align:center;
+}}
+.wiz-example-link:hover {{ background:var(--green); color:var(--bg); }}
 .wiz-code {{
   background:#1e1e2e !important; border:1px solid var(--border); border-radius:6px;
   padding:1rem; font-size:0.8rem; line-height:1.5; overflow-x:auto;
@@ -906,6 +918,12 @@ code {{ background:var(--surface2); padding:2px 6px; border-radius:4px; font-siz
           <p id="wiz-claude" class="claude-approach"></p>
           <div class="wiz-card-title">Run It</div>
           <code id="wiz-run" class="wiz-run"></code>
+          <div id="wiz-example-box" style="display:none; margin-top:1rem;">
+            <a id="wiz-example-link" class="wiz-example-link" href="#" target="_blank">
+              <span id="wiz-example-label"></span>
+              <span id="wiz-example-desc" style="display:block; font-size:0.75rem; color:var(--text-muted); font-weight:400;"></span>
+            </a>
+          </div>
           <div class="wiz-card-title">What You'll Learn</div>
           <ul id="wiz-learn" class="wiz-learn-list"></ul>
         </div>
@@ -1047,6 +1065,18 @@ function wizardSelect(index) {{
         ${{groups[cat].map(a => `<span class="wiz-app-item">${{a.name}} <span class="wiz-app-count">${{a.count.toLocaleString()}}x</span></span>`).join('')}}
       </div>
     </div>`).join('');
+
+  // Example link
+  const exBox = document.getElementById('wiz-example-box');
+  if (uc.example) {{
+    document.getElementById('wiz-example-link').href =
+      `https://github.com/janrummel/workflow-patterns/tree/main/${{uc.example.path}}`;
+    document.getElementById('wiz-example-label').textContent = uc.example.label;
+    document.getElementById('wiz-example-desc').textContent = uc.example.desc;
+    exBox.style.display = 'block';
+  }} else {{
+    exBox.style.display = 'none';
+  }}
 
   const learnEl = document.getElementById('wiz-learn');
   learnEl.innerHTML = uc.learn.map(l => `<li>${{l}}</li>`).join('');

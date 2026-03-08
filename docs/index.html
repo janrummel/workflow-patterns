@@ -123,6 +123,12 @@ code { background:var(--surface2); padding:2px 6px; border-radius:4px; font-size
 .wiz-app-item::after { content:" · "; color:var(--border); }
 .wiz-app-item:last-child::after { content:""; }
 .wiz-app-count { color:var(--text-muted); font-size:0.7rem; }
+.wiz-example-link {
+  display:block; padding:10px 14px; border:2px solid var(--green); border-radius:8px;
+  color:var(--green); text-decoration:none; font-weight:600; font-size:0.9rem;
+  transition:all 0.2s; text-align:center;
+}
+.wiz-example-link:hover { background:var(--green); color:var(--bg); }
 .wiz-code {
   background:#1e1e2e !important; border:1px solid var(--border); border-radius:6px;
   padding:1rem; font-size:0.8rem; line-height:1.5; overflow-x:auto;
@@ -188,6 +194,12 @@ code { background:var(--surface2); padding:2px 6px; border-radius:4px; font-size
           <p id="wiz-claude" class="claude-approach"></p>
           <div class="wiz-card-title">Run It</div>
           <code id="wiz-run" class="wiz-run"></code>
+          <div id="wiz-example-box" style="display:none; margin-top:1rem;">
+            <a id="wiz-example-link" class="wiz-example-link" href="#" target="_blank">
+              <span id="wiz-example-label"></span>
+              <span id="wiz-example-desc" style="display:block; font-size:0.75rem; color:var(--text-muted); font-weight:400;"></span>
+            </a>
+          </div>
           <div class="wiz-card-title">What You'll Learn</div>
           <ul id="wiz-learn" class="wiz-learn-list"></ul>
         </div>
@@ -529,7 +541,8 @@ const wizardData = [
     "claude_code": "Claude agent + MCP servers for data access + CLAUDE.md for behavior",
     "count": 2816,
     "pct": 36.58093011171733,
-    "avg_nodes": 18.986150568181817
+    "avg_nodes": 18.986150568181817,
+    "example": null
   },
   {
     "name": "AI Content Creation",
@@ -586,17 +599,22 @@ const wizardData = [
       }
     ],
     "code": "import anthropic, requests, smtplib\nfrom email.message import EmailMessage\n\n# 1. Fetch content\narticles = requests.get(\"https://api.example.com/articles?days=7\").json()\n\n# 2. Summarize with Claude\nclient = anthropic.Anthropic()\nsummary = client.messages.create(\n    model=\"claude-sonnet-4-20250514\",\n    messages=[{\"role\": \"user\", \"content\": f\"Summarize these articles:\\n{articles}\"}],\n).content[0].text\n\n# 3. Send digest\nmsg = EmailMessage()\nmsg[\"Subject\"] = \"Your Weekly Digest\"\nmsg.set_content(summary)\n# ... send via SMTP",
-    "run": "crontab: 0 7 * * 1 python weekly_digest.py",
+    "run": "cd examples/ai-content-creation && uv sync && uv run python run.py",
     "learn": [
-      "REST API calls",
+      "RSS/Atom feed parsing",
       "Claude for summarization",
-      "Email automation",
-      "Cron scheduling"
+      "Markdown generation",
+      "Modular workflow design"
     ],
     "claude_code": "Cron trigger + Claude agent for content + MCP server for delivery",
     "count": 2150,
     "pct": 27.929332294102366,
-    "avg_nodes": 19.02093023255814
+    "avg_nodes": 19.02093023255814,
+    "example": {
+      "path": "examples/ai-content-creation",
+      "label": "Runnable Example",
+      "desc": "15 tests, Claude API, RSS feeds \u2014 ready to run"
+    }
   },
   {
     "name": "Data Pipeline / ETL",
@@ -663,7 +681,8 @@ const wizardData = [
     "claude_code": "Python script + MCP server for data sources + cron scheduler",
     "count": 1127,
     "pct": 14.640166276955052,
-    "avg_nodes": 13.283052351375332
+    "avg_nodes": 13.283052351375332,
+    "example": null
   },
   {
     "name": "Social Media Automation",
@@ -730,7 +749,8 @@ const wizardData = [
     "claude_code": "Claude agent for content + MCP servers for each platform",
     "count": 1300,
     "pct": 16.887503247596776,
-    "avg_nodes": 20.173076923076923
+    "avg_nodes": 20.173076923076923,
+    "example": null
   },
   {
     "name": "Email Automation",
@@ -796,7 +816,8 @@ const wizardData = [
     "claude_code": "MCP server for email + trigger script + optional Claude for personalization",
     "count": 1329,
     "pct": 17.26422447388932,
-    "avg_nodes": 16.494356659142213
+    "avg_nodes": 16.494356659142213,
+    "example": null
   },
   {
     "name": "Document Processing",
@@ -863,7 +884,8 @@ const wizardData = [
     "claude_code": "Claude agent with file tools + MCP server for storage",
     "count": 1096,
     "pct": 14.237464276435437,
-    "avg_nodes": 23.598540145985403
+    "avg_nodes": 23.598540145985403,
+    "example": null
   },
   {
     "name": "API Integration / Sync",
@@ -930,7 +952,8 @@ const wizardData = [
     "claude_code": "MCP server wrapping the API + Python transform script + data MCP server",
     "count": 738,
     "pct": 9.586905689789555,
-    "avg_nodes": 13.462059620596206
+    "avg_nodes": 13.462059620596206,
+    "example": null
   },
   {
     "name": "AI Data Analysis",
@@ -997,7 +1020,8 @@ const wizardData = [
     "claude_code": "Claude agent + MCP server for data access + analysis skill",
     "count": 734,
     "pct": 9.534944141335412,
-    "avg_nodes": 18.88283378746594
+    "avg_nodes": 18.88283378746594,
+    "example": null
   },
   {
     "name": "Lead Gen / CRM",
@@ -1064,7 +1088,8 @@ const wizardData = [
     "claude_code": "MCP server for CRM + Claude agent for scoring + webhook trigger",
     "count": 536,
     "pct": 6.962847492855287,
-    "avg_nodes": 16.145522388059703
+    "avg_nodes": 16.145522388059703,
+    "example": null
   },
   {
     "name": "Scheduled Notifications",
@@ -1131,7 +1156,8 @@ const wizardData = [
     "claude_code": "Cron job + Python script + MCP server for notifications",
     "count": 591,
     "pct": 7.677318784099767,
-    "avg_nodes": 12.71404399323181
+    "avg_nodes": 12.71404399323181,
+    "example": null
   },
   {
     "name": "RAG / Knowledge Base",
@@ -1198,7 +1224,8 @@ const wizardData = [
     "claude_code": "Claude agent + vector store MCP server + document ingestion script",
     "count": 333,
     "pct": 4.325798908807482,
-    "avg_nodes": 26.32132132132132
+    "avg_nodes": 26.32132132132132,
+    "example": null
   },
   {
     "name": "Form / Webhook Handler",
@@ -1265,7 +1292,8 @@ const wizardData = [
     "claude_code": "Python webhook server + data validation script + MCP server for storage",
     "count": 891,
     "pct": 11.574434918160561,
-    "avg_nodes": 12.526374859708193
+    "avg_nodes": 12.526374859708193,
+    "example": null
   }
 ];
 
@@ -1323,6 +1351,18 @@ function wizardSelect(index) {
         ${groups[cat].map(a => `<span class="wiz-app-item">${a.name} <span class="wiz-app-count">${a.count.toLocaleString()}x</span></span>`).join('')}
       </div>
     </div>`).join('');
+
+  // Example link
+  const exBox = document.getElementById('wiz-example-box');
+  if (uc.example) {
+    document.getElementById('wiz-example-link').href =
+      `https://github.com/janrummel/workflow-patterns/tree/main/${uc.example.path}`;
+    document.getElementById('wiz-example-label').textContent = uc.example.label;
+    document.getElementById('wiz-example-desc').textContent = uc.example.desc;
+    exBox.style.display = 'block';
+  } else {
+    exBox.style.display = 'none';
+  }
 
   const learnEl = document.getElementById('wiz-learn');
   learnEl.innerHTML = uc.learn.map(l => `<li>${l}</li>`).join('');
