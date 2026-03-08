@@ -13,6 +13,7 @@ Usage:
 """
 
 import argparse
+import os
 from pathlib import Path
 
 from content_workflow.deliver import deliver_to_file
@@ -26,7 +27,22 @@ DEFAULT_FEEDS = [
 ]
 
 
+def _load_dotenv():
+    """Load .env file if it exists (no external dependency needed)."""
+    env_path = Path(__file__).parent / ".env"
+    if not env_path.exists():
+        return
+    for line in env_path.read_text().splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        key, _, value = line.partition("=")
+        if key and value:
+            os.environ.setdefault(key.strip(), value.strip())
+
+
 def main():
+    _load_dotenv()
     parser = argparse.ArgumentParser(description="AI Content Creation: feed -> summarize -> format -> deliver")
     parser.add_argument("--feeds", nargs="+", default=DEFAULT_FEEDS, help="RSS/Atom feed URLs")
     parser.add_argument("--output", type=Path, default=Path("output/digest.md"), help="Output file path")
