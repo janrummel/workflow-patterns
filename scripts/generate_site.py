@@ -309,6 +309,11 @@ def chat(user_message):
     return reply""",
         "run": "python chatbot.py  # or expose as MCP server",
         "learn": ["Claude API basics", "Conversation memory", "System prompts", "MCP tool design"],
+        "example": {
+            "path": "examples/ai-chatbot",
+            "label": "Runnable Example",
+            "desc": "22 tests, Claude API streaming, 5 personas, conversation memory — ready to run",
+        },
     },
     "AI Content Creation": {
         "question": "I regularly write similar content (newsletters, posts, summaries)",
