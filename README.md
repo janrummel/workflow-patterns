@@ -18,7 +18,9 @@
 
 ---
 
-![Workflow Patterns Explorer](docs/screenshot-wizard.png)
+**[Live Explorer](https://janrummel.github.io/workflow-patterns/)** | [View locally](#view-locally)
+
+[![Workflow Patterns Explorer](docs/screenshot-wizard.png)](https://janrummel.github.io/workflow-patterns/)
 
 ## The Idea
 
@@ -70,7 +72,7 @@ The site lets you pick a use case and instantly get a complete blueprint:
 - **Starter code** in Python with syntax highlighting
 - **Claude Code architecture** recommendation
 
-![Blueprint View](docs/screenshot-blueprint.png)
+[![Blueprint View](docs/screenshot-blueprint.png)](https://janrummel.github.io/workflow-patterns/)
 
 ### View locally
 
