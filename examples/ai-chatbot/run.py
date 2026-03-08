@@ -13,6 +13,7 @@ Usage:
 
 import argparse
 import os
+import sys
 from pathlib import Path
 
 from chatbot.chat import create_client, send_message
@@ -36,6 +37,37 @@ def _load_dotenv():
         key, _, value = line.partition("=")
         if key and value:
             os.environ.setdefault(key.strip(), value.strip())
+
+
+def _ensure_api_key():
+    """Prompt for API key if not set, optionally save to .env."""
+    if os.environ.get("ANTHROPIC_API_KEY"):
+        return
+
+    print("No ANTHROPIC_API_KEY found.\n")
+    print("Get your key at: https://console.anthropic.com/settings/keys\n")
+
+    try:
+        key = input("Enter your ANTHROPIC_API_KEY: ").strip()
+    except (EOFError, KeyboardInterrupt):
+        print("\nAborted.")
+        sys.exit(1)
+
+    if not key:
+        print("No key provided. Exiting.")
+        sys.exit(1)
+
+    os.environ["ANTHROPIC_API_KEY"] = key
+
+    try:
+        save = input("Save to .env for future use? [Y/n] ").strip().lower()
+    except (EOFError, KeyboardInterrupt):
+        save = "n"
+
+    if save != "n":
+        env_path = Path(__file__).parent / ".env"
+        env_path.write_text(f"ANTHROPIC_API_KEY={key}\n")
+        print(f"  Saved to {env_path}\n")
 
 
 def _select_persona() -> int:
@@ -82,6 +114,7 @@ def _handle_command(command: str, conversation: Conversation) -> bool:
 
 def main():
     _load_dotenv()
+    _ensure_api_key()
 
     parser = argparse.ArgumentParser(description="AI Chatbot: trigger -> ai -> data -> deliver")
     parser.add_argument("--persona", type=int, default=None, help="Persona number (1-5, skips interactive selection)")
