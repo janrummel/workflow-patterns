@@ -18,7 +18,9 @@
 
 ---
 
-![Workflow Patterns Explorer](docs/screenshot-wizard.png)
+**[Live Explorer](https://janrummel.github.io/workflow-patterns/)** | [View locally](#view-locally)
+
+[![Workflow Patterns Explorer](docs/screenshot-wizard.png)](https://janrummel.github.io/workflow-patterns/)
 
 ## The Idea
 
@@ -70,7 +72,7 @@ The site lets you pick a use case and instantly get a complete blueprint:
 - **Starter code** in Python with syntax highlighting
 - **Claude Code architecture** recommendation
 
-![Blueprint View](docs/screenshot-blueprint.png)
+[![Blueprint View](docs/screenshot-blueprint.png)](https://janrummel.github.io/workflow-patterns/)
 
 ### View locally
 
@@ -159,6 +161,7 @@ Each example implements a real workflow pattern with current tools — not just 
 | Example | Pattern | What it does |
 |---------|---------|-------------|
 | [AI Content Creation](examples/ai-content-creation/) | `api -> ai -> transform -> deliver` | Fetches RSS feeds, summarizes with Claude, saves a markdown digest. Interactive selection from 60 curated feeds across 6 categories. |
+| [AI Chatbot](examples/ai-chatbot/) | `trigger -> ai -> data -> deliver` | Streaming terminal chat with 5 persona presets and conversation persistence |
 
 ```bash
 cd examples/ai-content-creation
@@ -168,12 +171,12 @@ uv run python run.py           # interactive feed selection
 uv run python run.py --feeds https://hnrss.org/newest?points=100  # or custom
 ```
 
-More examples coming: AI Chatbot, Data Pipeline, Email Automation.
+More examples coming: Data Pipeline, Email Automation.
 
 ## Development
 
 ```bash
-uv run pytest -v          # 50 tests across 10 modules
+uv run pytest -v          # 72 tests across 15 modules
 uv run ruff check .       # Lint
 ```
 
@@ -188,6 +191,7 @@ workflow-patterns/
 │   ├── translator/claude_code.py  # Pattern -> Claude Code architecture mapping
 │   └── mcp_server/server.py       # 4 MCP tools for Claude Code integration
 ├── examples/
+│   ├── ai-chatbot/                # Runnable example (22 tests, streaming API, 5 personas)
 │   └── ai-content-creation/       # Runnable example (30 tests, Claude API, 60 curated feeds)
 ├── scripts/
 │   └── generate_site.py           # Static site generator with interactive wizard

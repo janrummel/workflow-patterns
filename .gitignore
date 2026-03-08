@@ -9,3 +9,4 @@ dist/
 .mypy_cache/
 data/workflows/
 data/all_workflows/
+.worktrees/
