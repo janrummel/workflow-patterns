@@ -433,6 +433,11 @@ You're confirmed for {event}. See you there!
         s.send_message(msg)""",
         "run": "python email_handler.py  # triggered by webhook or form",
         "learn": ["SMTP basics", "Email templating", "Webhook handling", "App passwords"],
+        "example": {
+            "path": "examples/email-automation",
+            "label": "Runnable Example",
+            "desc": "25 tests, 5 templates, HTML rendering, optional SMTP — ready to run",
+        },
     },
     "Document Processing": {
         "question": "I read documents and extract information from them",
