@@ -343,7 +343,7 @@ msg.set_content(summary)
         "example": {
             "path": "examples/ai-content-creation",
             "label": "Runnable Example",
-            "desc": "15 tests, Claude API, RSS feeds — ready to run",
+            "desc": "30 tests, Claude API, 60 curated feeds, interactive selection — ready to run",
         },
     },
     "Data Pipeline / ETL": {
