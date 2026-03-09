@@ -1,0 +1,72 @@
+[
+  {
+    "title": "API migration deadline",
+    "due_at": "2026-03-08T08:00:00",
+    "priority": "high",
+    "category": "deadline",
+    "tags": ["api", "migration"]
+  },
+  {
+    "title": "Security patch deployment",
+    "due_at": "2026-03-08T15:00:00",
+    "priority": "high",
+    "category": "deadline",
+    "tags": ["security", "deploy"]
+  },
+  {
+    "title": "Q1 report submission",
+    "due_at": "2026-03-08T18:00:00",
+    "priority": "medium",
+    "category": "deadline",
+    "tags": ["report", "q1"]
+  },
+  {
+    "title": "Team retrospective",
+    "due_at": "2026-03-09T14:00:00",
+    "priority": "low",
+    "category": "meeting",
+    "tags": ["team", "retro"]
+  },
+  {
+    "title": "Daily standup",
+    "due_at": "2026-03-08T09:30:00",
+    "priority": "medium",
+    "category": "meeting",
+    "tags": ["standup"]
+  },
+  {
+    "title": "Review PR #142",
+    "due_at": "2026-03-08T13:00:00",
+    "priority": "medium",
+    "category": "reminder",
+    "tags": ["code-review"]
+  },
+  {
+    "title": "Follow up with vendor",
+    "due_at": "2026-03-07T16:00:00",
+    "priority": "low",
+    "category": "reminder",
+    "tags": ["vendor", "followup"]
+  },
+  {
+    "title": "Database maintenance window",
+    "due_at": "2026-03-10T02:00:00",
+    "priority": "high",
+    "category": "maintenance",
+    "tags": ["database", "downtime"]
+  },
+  {
+    "title": "SSL certificate renewal",
+    "due_at": "2026-03-11T10:00:00",
+    "priority": "medium",
+    "category": "maintenance",
+    "tags": ["ssl", "security"]
+  },
+  {
+    "title": "Client demo preparation",
+    "due_at": "2026-03-08T14:00:00",
+    "priority": "high",
+    "category": "reminder",
+    "tags": ["client", "demo"]
+  }
+]
