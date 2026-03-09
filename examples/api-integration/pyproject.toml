@@ -1,0 +1,19 @@
+[project]
+name = "api-integration"
+version = "0.1.0"
+description = "API Integration workflow: trigger -> api -> transform -> data"
+requires-python = ">=3.12"
+dependencies = []
+
+[dependency-groups]
+dev = ["pytest"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/api_workflow"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
