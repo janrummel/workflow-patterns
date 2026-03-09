@@ -18,7 +18,7 @@
 
 ---
 
-**[Live Explorer](https://janrummel.github.io/workflow-patterns/)** | [View locally](#view-locally)
+**[Live Explorer](https://janrummel.github.io/workflow-patterns/)**
 
 [![Workflow Patterns Explorer](docs/screenshot-wizard.png)](https://janrummel.github.io/workflow-patterns/)
 
@@ -76,7 +76,10 @@ The site lets you pick a use case and instantly get a complete blueprint:
 
 ### View locally
 
+Generate the interactive site and open it in your browser:
+
 ```bash
+uv run python scripts/generate_site.py
 open docs/index.html
 ```
 
@@ -160,9 +163,12 @@ Each example implements a real workflow pattern with current tools — not just 
 
 | Example | Pattern | What it does |
 |---------|---------|-------------|
-| [AI Content Creation](examples/ai-content-creation/) | `api -> ai -> transform -> deliver` | Fetches RSS feeds, summarizes with Claude, saves a markdown digest. Interactive selection from 60 curated feeds across 6 categories. |
-| [AI Chatbot](examples/ai-chatbot/) | `trigger -> ai -> data -> deliver` | Streaming terminal chat with 5 persona presets and conversation persistence |
-| [Email Automation](examples/email-automation/) | `trigger -> transform -> deliver` | Template-based emails with 5 presets, HTML rendering, and optional SMTP delivery |
+| [AI Content Creation](examples/ai-content-creation/) | `api → ai → transform → deliver` | Fetches RSS feeds, summarizes with Claude, saves a markdown digest |
+| [AI Chatbot](examples/ai-chatbot/) | `trigger → ai → data → deliver` | Streaming terminal chat with 5 persona presets and conversation persistence |
+| [Email Automation](examples/email-automation/) | `trigger → transform → deliver` | Template-based emails with 5 presets, HTML rendering, and optional SMTP delivery |
+| [Scheduled Notifications](examples/scheduled-notifications/) | `trigger → api → logic → deliver` | Rule-based notification system with urgency levels and digest output |
+| [Data Pipeline](examples/data-pipeline/) | `trigger → data → transform → data` | Data processing with filter, aggregate, sort, rename, deduplicate transforms |
+| [API Integration](examples/api-integration/) | `trigger → api → transform → data` | REST API data collector with JSON path extraction and sample fallback |
 
 ```bash
 cd examples/ai-content-creation
@@ -172,7 +178,7 @@ uv run python run.py           # interactive feed selection
 uv run python run.py --feeds https://hnrss.org/newest?points=100  # or custom
 ```
 
-More examples coming: Data Pipeline, Social Media Automation, and more.
+More examples coming: Form/Webhook Handler, Social Media Automation, and more.
 
 ## Development
 
@@ -192,9 +198,12 @@ workflow-patterns/
 │   ├── translator/claude_code.py  # Pattern -> Claude Code architecture mapping
 │   └── mcp_server/server.py       # 4 MCP tools for Claude Code integration
 ├── examples/
-│   ├── ai-chatbot/                # Runnable example (22 tests, streaming API, 5 personas)
-│   ├── ai-content-creation/       # Runnable example (30 tests, Claude API, 60 curated feeds)
-│   └── email-automation/          # Runnable example (25 tests, 5 templates, HTML + SMTP)
+│   ├── ai-chatbot/                # 22 tests — streaming API, 5 personas
+│   ├── ai-content-creation/       # 30 tests — Claude API, 60 curated feeds
+│   ├── email-automation/          # 25 tests — 5 templates, HTML + SMTP
+│   ├── scheduled-notifications/   # 60 tests — rule engine, urgency levels
+│   ├── data-pipeline/             # 53 tests — filter, aggregate, sort
+│   └── api-integration/           # 36 tests — REST client, sample fallback
 ├── scripts/
 │   └── generate_site.py           # Static site generator with interactive wizard
 ├── docs/
