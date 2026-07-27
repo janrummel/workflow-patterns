@@ -2,7 +2,7 @@
   <h1 align="center">Workflow Patterns</h1>
   <p align="center">
     What do 7,698 real-world automation workflows have in common?<br/>
-    We extracted the universal patterns — and turned them into explorable blueprints.
+    This project extracts the universal patterns — and turns them into explorable blueprints.
   </p>
   <p align="center">
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>
@@ -14,7 +14,7 @@
 
 ---
 
-> We parsed 7,698 [n8n](https://n8n.io) workflow JSONs, mapped 80+ node types to 9 abstract categories, and extracted the recurring patterns behind everyday automation. The result: an **interactive explorer** with blueprints for 12 use cases, and an **MCP server** that lets Claude Code query the pattern database directly.
+> This project parses 7,698 [n8n](https://n8n.io) workflow JSONs, maps 80+ node types to 9 abstract categories, and extracts the recurring patterns behind everyday automation. The result: an **interactive explorer** with blueprints for 12 use cases, and an **MCP server** that lets Claude Code query the pattern database directly.
 
 ---
 
