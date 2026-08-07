@@ -51,6 +51,8 @@ open docs/index.html
 claude --mcp-config mcp.json
 ```
 
+> **Note:** Adjust the `cwd` path in `mcp.json` to your local checkout location first.
+
 ## Key Findings
 
 | Insight | Detail |

@@ -3,7 +3,7 @@
     "workflow-patterns": {
       "command": "uv",
       "args": ["run", "python", "main.py"],
-      "cwd": "/Users/janrummel/projects/workflow-patterns"
+      "cwd": "/path/to/workflow-patterns"
     }
   }
 }
