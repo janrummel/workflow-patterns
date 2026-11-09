@@ -22,6 +22,8 @@
 
 [![Workflow Patterns Explorer](docs/screenshot-wizard.png)](https://janrummel.github.io/workflow-patterns/)
 
+> **Status: completed (as of August 2026).** No further development; the website stays online and the repository is archived (read-only).
+
 ## The Idea
 
 People build automation workflows every day — in n8n, Make, Zapier, or with code. The tools differ, but the **patterns are universal**:
