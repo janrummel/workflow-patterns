@@ -221,6 +221,10 @@ workflow-patterns/
 
 Workflow data from [n8nworkflows.xyz](https://github.com/nusquama/n8nworkflows.xyz), an independent archive of 7,000+ public n8n workflow templates. The sample dataset includes 15 workflows for development; the full dataset (7,698 workflows) can be placed in `data/all_workflows/`.
 
+## Publishing
+
+https://janrummel.github.io/workflow-patterns/ is served by GitHub Pages straight from branch `main`, folder `/docs`. No build step: the files are static HTML, CSS and JavaScript.
+
 ## License
 
 [MIT](LICENSE)
